@@ -91,6 +91,7 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
 
     suspend fun connect(): Flow<LocalMessage> {
         return callbackFlow {
+            var keepRunning = true
             try {
                 userInfo = userStorage.get()
                 smtpSession = configureSMTP(userInfo?.email, userInfo?.password)
@@ -135,24 +136,22 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
 
                 })
 
-                var keepRunning = true
                 while (keepRunning) {
                     try {
                         (inbox as IMAPFolder).idle()
                     } catch (e: FolderClosedException) {
                         inbox?.open(Folder.READ_ONLY)
                     } catch (e: Exception) {
-                        close(e)
                         keepRunning = false
                     }
                 }
 
-                awaitClose {
-                    keepRunning = false
-                    disconnect()
-                }
             } catch (e: Exception) {
                 e.printStackTrace()
+            }
+            awaitClose {
+                keepRunning = false
+                disconnect()
             }
         }
     }
@@ -160,7 +159,12 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
     fun disconnect() {
         smtpSession = null
         userInfo = null
-        store?.close()
-        inbox?.close(false)
+        if(store?.isConnected == true) {
+            store?.close()
+        }
+        if(inbox?.isOpen == true) {
+            inbox?.close(false)
+        }
+
     }
 }
