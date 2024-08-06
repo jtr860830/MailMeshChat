@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">MailMeshChat</string>
+    <string name="welcome_to_mailmeshchat">Welcome to MailMeshChat!</string>
+    <string name="mailmeshchat_description">A messaging app using mail protocols</string>
+    <string name="sign_in">Sign in</string>
+    <string name="get_started_with_mailmeshchat">Get started!</string>
+    <string name="login_description">Log in to your email account and stay connected with seamless messaging</string>
+    <string name="example_email">example@google.com</string>
+    <string name="email">Email</string>
+    <string name="password">password</string>
+    <string name="example_password">Aa123456</string>
+    <string name="login">Login</string>
+    <string name="group">Group</string>
+    <string name="search">Search</string>
+    <string name="submit">Submit</string>
+    <string name="enter_group_email">Enter email</string>
+    <string name="enter_group_email_description">This will be an example of input</string>
+    <string name="type_a_message">Type a message</string>
+</resources>
