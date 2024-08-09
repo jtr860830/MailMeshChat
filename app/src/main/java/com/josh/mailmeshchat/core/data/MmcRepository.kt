@@ -1,7 +1,6 @@
 package com.josh.mailmeshchat.core.data
 
 import com.josh.mailmeshchat.core.data.model.Contact
-import com.josh.mailmeshchat.core.data.model.ContactSerializable
 import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.data.model.UserInfo
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +25,11 @@ interface MmcRepository {
 
     fun getMessagesByGroup(subject: String): Flow<List<Message>>
 
-    fun setContact(contact: Contact)
+    suspend fun addContact(contact: Contact)
+
+    suspend fun deleteContact(contact: Contact)
 
     fun fetchContacts(): Flow<List<Contact>>
+
+    fun observeContacts(): Flow<Unit>
 }

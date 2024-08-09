@@ -27,9 +27,10 @@ class ContactViewModel(
     val events = eventChannel.receiveAsFlow()
 
     init {
+        fetchContact()
         viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.fetchContacts().collectLatest {
-                state = state.copy(contacts = it)
+            mmcRepository.observeContacts().collectLatest {
+                fetchContact()
             }
         }
     }
@@ -47,25 +48,40 @@ class ContactViewModel(
             ContactAction.OnCreateGroupDialogDismiss -> hideCreateGroupDialog()
 
             is ContactAction.OnCreateContactSubmit -> {
-                setContact(Contact(name = action.name, email = action.email))
+                addContact(Contact(name = action.name, email = action.email))
             }
 
             is ContactAction.OnContactItemClick -> {
-                viewModelScope.launch {
-                    eventChannel.send(
-                        ContactEvent.OnGroupItemClick(
-                            action.contact.name,
-                            mmcRepository.getUser()!!.email
-                        )
-                    )
-                }
+                state = state.copy(selectContact = action.contact)
+                showContactDetailDialog()
+            }
+
+            ContactAction.OnContactDetailDialogDismiss -> hideContactDetailDialog()
+
+            is ContactAction.OnDeleteContactClick -> {
+                deleteContact(action.contact)
+                hideContactDetailDialog()
             }
         }
     }
 
-    private fun setContact(contact: Contact) {
+    private fun addContact(contact: Contact) {
         viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.setContact(contact)
+            mmcRepository.addContact(contact)
+        }
+    }
+
+    private fun fetchContact() {
+        viewModelScope.launch(Dispatchers.IO) {
+            mmcRepository.fetchContacts().collectLatest {
+                state = state.copy(contacts = it)
+            }
+        }
+    }
+
+    private fun deleteContact(contact: Contact) {
+        viewModelScope.launch(Dispatchers.IO) {
+            mmcRepository.deleteContact(contact)
         }
     }
 
@@ -76,5 +92,13 @@ class ContactViewModel(
 
     private fun hideCreateGroupDialog() {
         state = state.copy(isShowCreateGroupDialog = false)
+    }
+
+    private fun showContactDetailDialog() {
+        state = state.copy(isShowContactDetailDialog = true)
+    }
+
+    private fun hideContactDetailDialog() {
+        state = state.copy(isShowContactDetailDialog = false)
     }
 }

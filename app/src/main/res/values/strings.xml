@@ -21,4 +21,6 @@
     <string name="enter_contact_info">Enter Contact Info</string>
     <string name="enter_contact_info_description">This is contact info description</string>
     <string name="example_name">Josh</string>
+    <string name="contact_detail">Contact Detail</string>
+    <string name="send_message">Send Message</string>
 </resources>

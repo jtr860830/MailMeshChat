@@ -96,70 +96,15 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
         }
     }
 
-    suspend fun connect(): Flow<LocalMessage> {
-        return callbackFlow {
-            var keepRunning = true
-            try {
-                userInfo = userStorage.get()
-                smtpSession = configureSMTP(userInfo?.email, userInfo?.password)
+    suspend fun connect() {
+        try {
+            userInfo = userStorage.get()
+            smtpSession = configureSMTP(userInfo?.email, userInfo?.password)
 
-                store = configureIMAP()
-                store?.connect(userInfo?.email, userInfo?.password)
-
-                inbox = store?.getFolder("INBOX")
-                inbox?.open(Folder.READ_ONLY)
-
-                val messages = inbox?.messages
-                messages?.let {
-                    for (message in messages) {
-                        trySend(
-                            LocalMessage(
-                                sender = message.from[0].toString(),
-                                subject = message.subject.removeAllPrefixes("Re: "),
-                                message = message.content.toString(),
-                                timestamp = message.sentDate.time
-                            )
-                        )
-                    }
-                }
-
-                inbox?.addMessageCountListener(object : MessageCountListener {
-                    override fun messagesAdded(e: MessageCountEvent?) {
-                        e?.messages?.forEach { message ->
-                            trySend(
-                                LocalMessage(
-                                    sender = message.from[0].toString(),
-                                    subject = message.subject.removeAllPrefixes("Re: "),
-                                    message = message.content.toString(),
-                                    timestamp = message.sentDate.time
-                                )
-                            )
-                        }
-                    }
-
-                    override fun messagesRemoved(e: MessageCountEvent?) {
-
-                    }
-
-                })
-
-                while (keepRunning) {
-                    try {
-                        (inbox as IMAPFolder).idle()
-                    } catch (e: FolderClosedException) {
-                        inbox?.open(Folder.READ_ONLY)
-                    } catch (e: Exception) {
-                        keepRunning = false
-                    }
-                }
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            awaitClose {
-                keepRunning = false
-                disconnect()
-            }
+            store = configureIMAP()
+            store?.connect(userInfo?.email, userInfo?.password)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -175,8 +120,8 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
 
     }
 
-    fun setContact(contact: Contact) {
-        val folder = store!!.getFolder("mmc/contacts")
+    fun addContact(contact: Contact) {
+        val folder = getFolder(FOLDER_CONTACTS)
         if (!folder.exists()) {
             folder.create(Folder.HOLDS_MESSAGES)
         }
@@ -186,7 +131,6 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
         message.subject = UUID.randomUUID().toString()
         message.setText(Json.encodeToString(contact.toContactSerializable()))
 
-
         folder.appendMessages(arrayOf(message))
 
         folder.close(false)
@@ -194,11 +138,7 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
 
     fun fetchContact(): Flow<List<Contact>> {
         return flow {
-            val folder = store!!.getFolder("mmc/contacts")
-            if (!folder.exists()) {
-                emit(emptyList())
-                return@flow
-            }
+            val folder = getFolder(FOLDER_CONTACTS)
             folder.open(Folder.READ_ONLY)
 
             val messages = folder.messages
@@ -215,4 +155,56 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
         }
     }
 
+    fun deleteContact(contact: Contact) {
+        val folder = getFolder(FOLDER_CONTACTS)
+        folder.open(Folder.READ_WRITE)
+
+        val messages = folder.search(SubjectTerm(contact.id))
+        for (message in messages) {
+            message.setFlag(Flags.Flag.DELETED, true)
+        }
+
+        folder.close(true)
+    }
+
+    fun observeContact(): Flow<Unit> {
+        return callbackFlow {
+            val folder = getFolder(FOLDER_CONTACTS)
+            folder.open(Folder.READ_ONLY)
+
+            folder.addMessageCountListener(object : MessageCountListener {
+                override fun messagesAdded(e: MessageCountEvent?) {
+                    trySend(Unit)
+                }
+
+                override fun messagesRemoved(e: MessageCountEvent?) {
+                    trySend(Unit)
+                }
+            })
+
+            var idle = true
+            while (idle) {
+                (folder as IMAPFolder).idle()
+            }
+
+            awaitClose {
+                folder.close(false)
+                idle = false
+            }
+        }
+    }
+
+    private fun getFolder(folderName: String): Folder {
+        val folder = store!!.getFolder(folderName)
+        if (!folder.exists()) {
+            folder.create(Folder.HOLDS_MESSAGES)
+        }
+        return folder
+    }
+
+    companion object {
+        const val FOLDER_CONTACTS = "mmc/contacts"
+        const val FOLDER_MESSAGES = "mmc/messages"
+        const val FOLDER_GROUPS = "mmc/groups"
+    }
 }

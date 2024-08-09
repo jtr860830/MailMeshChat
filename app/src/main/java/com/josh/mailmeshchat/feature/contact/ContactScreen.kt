@@ -26,6 +26,7 @@ import com.josh.mailmeshchat.core.designsystem.components.GradientBackground
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatFloatActionButton
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatTextField
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatToolBar
+import com.josh.mailmeshchat.core.ui.ContactDetailDialog
 import com.josh.mailmeshchat.core.ui.ContactItem
 import com.josh.mailmeshchat.core.ui.CreateContactDialog
 import com.josh.mailmeshchat.core.util.ObserveAsEvents
@@ -103,11 +104,18 @@ fun ContactContent(
             onClick = { onAction(ContactAction.OnCreateGroupClick) }
         )
     }
-    if (state.isShowCreateGroupDialog) {
-        CreateContactDialog(
-            showDialog = state.isShowCreateGroupDialog,
-            onDismiss = { onAction(ContactAction.OnCreateGroupDialogDismiss) },
-            onSubmit = { name, email -> onAction(ContactAction.OnCreateContactSubmit(name, email)) }
+    CreateContactDialog(
+        showDialog = state.isShowCreateGroupDialog,
+        onDismiss = { onAction(ContactAction.OnCreateGroupDialogDismiss) },
+        onSubmit = { name, email -> onAction(ContactAction.OnCreateContactSubmit(name, email)) }
+    )
+    state.selectContact?.let {
+        ContactDetailDialog(
+            contact = state.selectContact,
+            showDialog = state.isShowContactDetailDialog,
+            onDismiss = { onAction(ContactAction.OnContactDetailDialogDismiss) },
+            onSendMessageClick = {},
+            onDeleteClick = { onAction(ContactAction.OnDeleteContactClick(it)) }
         )
     }
 }

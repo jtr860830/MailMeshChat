@@ -1,7 +1,6 @@
 package com.josh.mailmeshchat.core.data
 
 import com.josh.mailmeshchat.core.data.model.Contact
-import com.josh.mailmeshchat.core.data.model.ContactSerializable
 import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.data.model.UserInfo
 import com.josh.mailmeshchat.core.database.datasource.LocalMessageDataSource
@@ -28,9 +27,7 @@ class DefaultMmcRepository(
     }
 
     override suspend fun connect() {
-        mailClient.connect().collect {
-            localMessageDataSource.insert(it)
-        }
+        mailClient.connect()
     }
 
     override suspend fun disconnect() {
@@ -57,11 +54,19 @@ class DefaultMmcRepository(
         return localMessageDataSource.getMessagesByGroup(subject)
     }
 
-    override fun setContact(contact: Contact) {
-        mailClient.setContact(contact)
+    override suspend fun addContact(contact: Contact) {
+        mailClient.addContact(contact)
+    }
+
+    override suspend fun deleteContact(contact: Contact) {
+        mailClient.deleteContact(contact)
     }
 
     override fun fetchContacts(): Flow<List<Contact>> {
         return mailClient.fetchContact()
+    }
+
+    override fun observeContacts(): Flow<Unit> {
+        return mailClient.observeContact()
     }
 }
