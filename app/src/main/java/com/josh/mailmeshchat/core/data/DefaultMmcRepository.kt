@@ -1,5 +1,7 @@
 package com.josh.mailmeshchat.core.data
 
+import com.josh.mailmeshchat.core.data.model.Contact
+import com.josh.mailmeshchat.core.data.model.ContactSerializable
 import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.data.model.UserInfo
 import com.josh.mailmeshchat.core.database.datasource.LocalMessageDataSource
@@ -53,5 +55,13 @@ class DefaultMmcRepository(
 
     override fun getMessagesByGroup(subject: String): Flow<List<Message>> {
         return localMessageDataSource.getMessagesByGroup(subject)
+    }
+
+    override fun setContact(contact: Contact) {
+        mailClient.setContact(contact)
+    }
+
+    override fun fetchContacts(): Flow<List<Contact>> {
+        return mailClient.fetchContact()
     }
 }

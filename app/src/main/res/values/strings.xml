@@ -16,4 +16,9 @@
     <string name="enter_group_email">Enter email</string>
     <string name="enter_group_email_description">This will be an example of input</string>
     <string name="type_a_message">Type a message</string>
+    <string name="contacts">Contacts</string>
+    <string name="message">Message</string>
+    <string name="enter_contact_info">Enter Contact Info</string>
+    <string name="enter_contact_info_description">This is contact info description</string>
+    <string name="example_name">Josh</string>
 </resources>

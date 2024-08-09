@@ -18,6 +18,7 @@ import com.josh.mailmeshchat.core.util.validator.EmailPatternValidator
 import com.josh.mailmeshchat.core.util.validator.PatternValidator
 import com.josh.mailmeshchat.core.util.validator.UserDataValidator
 import com.josh.mailmeshchat.feature.chat.ChatViewModel
+import com.josh.mailmeshchat.feature.contact.ContactViewModel
 import com.josh.mailmeshchat.feature.group.GroupViewModel
 import com.josh.mailmeshchat.feature.login.LoginViewModel
 import org.koin.android.ext.koin.androidApplication
@@ -49,6 +50,7 @@ val appModule = module {
     viewModelOf(::MainViewModel)
     viewModelOf(::LoginViewModel)
     viewModelOf(::GroupViewModel)
+    viewModelOf(::ContactViewModel)
     viewModelOf(::ChatViewModel)
 
     single {

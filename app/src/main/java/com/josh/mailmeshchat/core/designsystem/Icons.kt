@@ -52,3 +52,7 @@ val ArrowBackIcon: ImageVector
 val SendIcon: ImageVector
     @Composable
     get() = ImageVector.vectorResource(id = R.drawable.send)
+
+val PersonIcon: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(id = R.drawable.person)

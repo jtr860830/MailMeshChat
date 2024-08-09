@@ -1,12 +1,19 @@
 package com.josh.mailmeshchat.core.mailclient
 
+import com.josh.mailmeshchat.core.data.model.Contact
+import com.josh.mailmeshchat.core.data.model.ContactSerializable
 import com.josh.mailmeshchat.core.data.model.UserInfo
+import com.josh.mailmeshchat.core.data.model.mapper.toContact
+import com.josh.mailmeshchat.core.data.model.mapper.toContactSerializable
 import com.josh.mailmeshchat.core.sharedpreference.UserStorage
 import com.josh.mailmeshchat.core.util.removeAllPrefixes
 import com.sun.mail.imap.IMAPFolder
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.util.UUID
 import javax.mail.*
 import javax.mail.event.MessageCountEvent
@@ -159,12 +166,53 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
     fun disconnect() {
         smtpSession = null
         userInfo = null
-        if(store?.isConnected == true) {
+        if (store?.isConnected == true) {
             store?.close()
         }
-        if(inbox?.isOpen == true) {
+        if (inbox?.isOpen == true) {
             inbox?.close(false)
         }
 
     }
+
+    fun setContact(contact: Contact) {
+        val folder = store!!.getFolder("mmc/contacts")
+        if (!folder.exists()) {
+            folder.create(Folder.HOLDS_MESSAGES)
+        }
+        folder.open(Folder.READ_WRITE)
+
+        val message = MimeMessage(smtpSession)
+        message.subject = UUID.randomUUID().toString()
+        message.setText(Json.encodeToString(contact.toContactSerializable()))
+
+
+        folder.appendMessages(arrayOf(message))
+
+        folder.close(false)
+    }
+
+    fun fetchContact(): Flow<List<Contact>> {
+        return flow {
+            val folder = store!!.getFolder("mmc/contacts")
+            if (!folder.exists()) {
+                emit(emptyList())
+                return@flow
+            }
+            folder.open(Folder.READ_ONLY)
+
+            val messages = folder.messages
+            val contacts = mutableListOf<Contact>()
+
+            for (message in messages) {
+                val content = message.content.toString()
+                val contact = Json.decodeFromString<ContactSerializable>(content)
+                contacts.add(contact.toContact(message.subject))
+            }
+
+            folder.close(false)
+            emit(contacts)
+        }
+    }
+
 }

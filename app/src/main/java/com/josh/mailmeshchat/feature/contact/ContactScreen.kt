@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalFoundationApi::class)
 
-package com.josh.mailmeshchat.feature.group
+package com.josh.mailmeshchat.feature.contact
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
@@ -26,26 +26,26 @@ import com.josh.mailmeshchat.core.designsystem.components.GradientBackground
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatFloatActionButton
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatTextField
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatToolBar
-import com.josh.mailmeshchat.core.ui.ChatGroupItem
-import com.josh.mailmeshchat.core.ui.CreateGroupDialog
+import com.josh.mailmeshchat.core.ui.ContactItem
+import com.josh.mailmeshchat.core.ui.CreateContactDialog
 import com.josh.mailmeshchat.core.util.ObserveAsEvents
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun GroupScreen(
+fun ContactScreen(
     onLogoutSuccess: () -> Unit,
     onGroupItemClick: (subject: String, user: String) -> Unit,
-    viewModel: GroupViewModel = koinViewModel(),
+    viewModel: ContactViewModel = koinViewModel(),
     bottomBarPadding: PaddingValues
 ) {
     ObserveAsEvents(flow = viewModel.events) {
         when (it) {
-            GroupEvent.LogoutSuccess -> onLogoutSuccess()
-            is GroupEvent.OnGroupItemClick -> onGroupItemClick(it.subject, it.user)
+            ContactEvent.LogoutSuccess -> onLogoutSuccess()
+            is ContactEvent.OnGroupItemClick -> onGroupItemClick(it.subject, it.user)
         }
     }
 
-    GroupContent(
+    ContactContent(
         viewModel.state,
         viewModel::onAction,
         bottomBarPadding = bottomBarPadding
@@ -53,9 +53,9 @@ fun GroupScreen(
 }
 
 @Composable
-fun GroupContent(
-    state: GroupState,
-    onAction: (GroupAction) -> Unit,
+fun ContactContent(
+    state: ContactState,
+    onAction: (ContactAction) -> Unit,
     bottomBarPadding: PaddingValues
 ) {
     GradientBackground {
@@ -67,9 +67,9 @@ fun GroupContent(
                 .padding(top = 16.dp)
         ) {
             MailMeshChatToolBar(
-                text = stringResource(id = R.string.group),
+                text = stringResource(id = R.string.contacts),
                 icon = LogoutIcon,
-                onIconClick = { onAction(GroupAction.OnLogoutClick) })
+                onIconClick = { onAction(ContactAction.OnLogoutClick) })
             Spacer(modifier = Modifier.height(8.dp))
             MailMeshChatTextField(
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -83,10 +83,10 @@ fun GroupContent(
             LazyColumn(
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                items(state.groups) { group ->
-                    ChatGroupItem(
-                        groupName = group,
-                        onClick = { onAction(GroupAction.OnGroupItemClick(group)) }
+                items(state.contacts) { contact ->
+                    ContactItem(
+                        name = contact.name,
+                        onClick = { onAction(ContactAction.OnContactItemClick(contact)) }
                     )
                 }
             }
@@ -100,24 +100,24 @@ fun GroupContent(
         contentAlignment = Alignment.BottomEnd
     ) {
         MailMeshChatFloatActionButton(
-            onClick = { onAction(GroupAction.OnCreateGroupClick) }
+            onClick = { onAction(ContactAction.OnCreateGroupClick) }
         )
     }
     if (state.isShowCreateGroupDialog) {
-        CreateGroupDialog(
+        CreateContactDialog(
             showDialog = state.isShowCreateGroupDialog,
-            onDismiss = { onAction(GroupAction.OnCreateGroupDialogDismiss) },
-            onSubmit = { onAction(GroupAction.OnCreateGroupSubmit(it)) }
+            onDismiss = { onAction(ContactAction.OnCreateGroupDialogDismiss) },
+            onSubmit = { name, email -> onAction(ContactAction.OnCreateContactSubmit(name, email)) }
         )
     }
 }
 
 @Preview
 @Composable
-private fun GroupScreenPreview() {
+private fun ContactScreenPreview() {
     MailMeshChatTheme {
-        GroupContent(
-            state = GroupState(),
+        ContactContent(
+            state = ContactState(),
             onAction = {},
             PaddingValues()
         )
