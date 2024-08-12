@@ -19,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.josh.mailmeshchat.R
-import com.josh.mailmeshchat.core.designsystem.LogoutIcon
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
 import com.josh.mailmeshchat.core.designsystem.SearchIcon
 import com.josh.mailmeshchat.core.designsystem.components.GradientBackground
@@ -68,8 +67,8 @@ fun GroupContent(
         ) {
             MailMeshChatToolBar(
                 text = stringResource(id = R.string.group),
-                icon = LogoutIcon,
-                onIconClick = { onAction(GroupAction.OnLogoutClick) })
+                icon = null
+            )
             Spacer(modifier = Modifier.height(8.dp))
             MailMeshChatTextField(
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -103,13 +102,11 @@ fun GroupContent(
             onClick = { onAction(GroupAction.OnCreateGroupClick) }
         )
     }
-    if (state.isShowCreateGroupDialog) {
-        CreateGroupDialog(
-            showDialog = state.isShowCreateGroupDialog,
-            onDismiss = { onAction(GroupAction.OnCreateGroupDialogDismiss) },
-            onSubmit = { onAction(GroupAction.OnCreateGroupSubmit(it)) }
-        )
-    }
+    CreateGroupDialog(
+        showDialog = state.isShowCreateGroupDialog,
+        onDismiss = { onAction(GroupAction.OnCreateGroupDialogDismiss) },
+        onSubmit = { onAction(GroupAction.OnCreateGroupSubmit(it)) }
+    )
 }
 
 @Preview

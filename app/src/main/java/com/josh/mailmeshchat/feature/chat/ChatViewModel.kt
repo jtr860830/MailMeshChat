@@ -12,8 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.josh.mailmeshchat.core.data.MmcRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -35,11 +34,11 @@ class ChatViewModel(
         state = state.copy(subject = subject)
         state = state.copy(user = user)
 
-        mmcRepository.getMessagesByGroup(subject)
-            .onEach { messages ->
-                state = state.copy(messages = messages)
+        viewModelScope.launch(Dispatchers.IO) {
+            mmcRepository.fetchMessagesBySubject(subject).collectLatest {
+                state = state.copy(messages = it)
             }
-            .launchIn(viewModelScope)
+        }
     }
 
     fun onAction(action: ChatAction) {
@@ -49,6 +48,7 @@ class ChatViewModel(
                     eventChannel.send(ChatEvent.OnBackClick)
                 }
             }
+
             is ChatAction.OnSendClick -> {
                 val message = state.inputMessage.text.toString()
                 val subject = state.subject

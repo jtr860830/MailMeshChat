@@ -1,6 +1,5 @@
 package com.josh.mailmeshchat.core.mailclient
 
-import android.util.Log
 import com.josh.mailmeshchat.core.data.model.Contact
 import com.josh.mailmeshchat.core.data.model.ContactSerializable
 import com.josh.mailmeshchat.core.data.model.UserInfo
@@ -62,6 +61,28 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
         folder.open(Folder.READ_WRITE)
         folder.appendMessages(arrayOf(message))
         folder.close(false)
+    }
+
+    fun fetchMessages(): Flow<List<Message>> {
+        return flow {
+            val folder = getFolder(FOLDER_MESSAGES)
+            folder.open(Folder.READ_ONLY)
+
+            val messages = folder.messages
+            emit(messages.toList())
+            folder.close(false)
+        }
+    }
+
+    fun fetchMessagesBySubject(subject: String): Flow<List<Message>> {
+        return flow {
+            val folder = getFolder(FOLDER_MESSAGES)
+            folder.open(Folder.READ_ONLY)
+
+            val messages = folder.search(SubjectTerm(subject))
+            emit(messages.toList())
+            folder.close(false)
+        }
     }
 
     suspend fun reply(

@@ -3,10 +3,12 @@ package com.josh.mailmeshchat.core.data
 import com.josh.mailmeshchat.core.data.model.Contact
 import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.data.model.UserInfo
+import com.josh.mailmeshchat.core.data.model.mapper.toMessage
 import com.josh.mailmeshchat.core.database.datasource.LocalMessageDataSource
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient
 import com.josh.mailmeshchat.core.sharedpreference.UserStorage
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class DefaultMmcRepository(
     private val userStorage: UserStorage,
@@ -16,6 +18,15 @@ class DefaultMmcRepository(
 
     override suspend fun sendMessage(to: String) {
         mailClient.sendMessage(to, "Hello")
+    }
+
+    override suspend fun fetchMessages(): Flow<List<Message>> {
+        return mailClient.fetchMessages().map { it.map { mimeMessage -> mimeMessage.toMessage() } }
+    }
+
+    override suspend fun fetchMessagesBySubject(subject: String): Flow<List<Message>> {
+        return mailClient.fetchMessagesBySubject(subject)
+            .map { it.map { mimeMessage -> mimeMessage.toMessage() } }
     }
 
     override suspend fun reply(subject: String, replyMessage: String) {

@@ -11,8 +11,6 @@ import androidx.lifecycle.viewModelScope
 import com.josh.mailmeshchat.core.data.MmcRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -27,9 +25,15 @@ class GroupViewModel(
     val events = eventChannel.receiveAsFlow()
 
     init {
-        mmcRepository.getGroups().onEach { groups ->
-            state = state.copy(groups = groups)
-        }.launchIn(viewModelScope)
+        viewModelScope.launch(Dispatchers.IO) {
+            mmcRepository.fetchMessages().collect {
+                val messages = mutableSetOf<String>()
+                for (message in it) {
+                    messages.add(message.subject)
+                }
+                state = state.copy(groups = messages.toList())
+            }
+        }
     }
 
     fun onAction(action: GroupAction) {

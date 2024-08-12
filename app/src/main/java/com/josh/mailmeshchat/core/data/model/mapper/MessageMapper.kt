@@ -20,3 +20,12 @@ fun Message.toMessageEntity(): MessageEntity {
         timestamp = timestamp
     )
 }
+
+fun javax.mail.Message.toMessage(): Message {
+    return Message(
+        subject = subject,
+        sender = from[0].toString(),
+        message = content.toString().trim(),
+        timestamp = receivedDate.time
+    )
+}
