@@ -63,7 +63,7 @@ class GroupViewModel(
 
     private fun createGroup(email: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.send(email)
+            mmcRepository.sendMessage(email)
         }
     }
 

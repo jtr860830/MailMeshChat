@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface MmcRepository {
 
-    suspend fun send(to: String)
+    suspend fun sendMessage(to: String)
 
     suspend fun reply(subject: String, replyMessage: String)
 

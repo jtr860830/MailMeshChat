@@ -1,5 +1,6 @@
 package com.josh.mailmeshchat.core.mailclient
 
+import android.util.Log
 import com.josh.mailmeshchat.core.data.model.Contact
 import com.josh.mailmeshchat.core.data.model.ContactSerializable
 import com.josh.mailmeshchat.core.data.model.UserInfo
@@ -35,33 +36,32 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
     protected abstract fun configureSMTP(email: String?, password: String?): Session
     protected abstract fun configureIMAP(): Store
 
-    suspend fun send(
+    suspend fun sendMessage(
         to: String,
         message: String,
-        onSendSuccess: suspend (message: LocalMessage) -> Unit
     ) {
         smtpSession?.let {
             val uuid = UUID.randomUUID().toString()
-            try {
-                val mail = MimeMessage(smtpSession).apply {
-                    setFrom(InternetAddress(userInfo?.email))
-                    setRecipients(Message.RecipientType.TO, InternetAddress.parse(to))
-                    subject = uuid
-                    setText(message)
-                }
-                Transport.send(mail)
-                onSendSuccess.invoke(
-                    LocalMessage(
-                        sender = userInfo?.email ?: "",
-                        subject = uuid,
-                        message = message,
-                        timestamp = System.currentTimeMillis()
-                    )
-                )
-            } catch (e: Exception) {
-                e.printStackTrace()
+
+            val mail = MimeMessage(smtpSession).apply {
+                setHeader("X-MMC-Id", uuid)
+                setHeader("X-MMC-Timestamp", System.currentTimeMillis().toString())
+                setFrom(InternetAddress(userInfo?.email))
+                setRecipients(Message.RecipientType.TO, InternetAddress.parse(to))
+                subject = uuid
+                setText(message)
             }
+
+            Transport.send(mail)
+            appendMessage(mail)
         }
+    }
+
+    private fun appendMessage(message: Message) {
+        val folder = getFolder(FOLDER_MESSAGES)
+        folder.open(Folder.READ_WRITE)
+        folder.appendMessages(arrayOf(message))
+        folder.close(false)
     }
 
     suspend fun reply(

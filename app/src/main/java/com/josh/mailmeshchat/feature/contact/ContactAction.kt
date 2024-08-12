@@ -9,5 +9,6 @@ sealed interface ContactAction {
     data object OnCreateGroupDialogDismiss : ContactAction
     data class OnCreateContactSubmit(val name: String, val email: String) : ContactAction
     data object OnContactDetailDialogDismiss : ContactAction
+    data class OnSendMessageClick(val contact: Contact) : ContactAction
     data class OnDeleteContactClick(val contact: Contact) : ContactAction
 }

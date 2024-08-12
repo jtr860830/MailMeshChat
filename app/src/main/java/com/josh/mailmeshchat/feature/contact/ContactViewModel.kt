@@ -60,8 +60,17 @@ class ContactViewModel(
 
             is ContactAction.OnDeleteContactClick -> {
                 deleteContact(action.contact)
-                hideContactDetailDialog()
             }
+
+            is ContactAction.OnSendMessageClick -> {
+                sendMessage(action.contact)
+            }
+        }
+    }
+
+    private fun sendMessage(contact: Contact) {
+        viewModelScope.launch(Dispatchers.IO) {
+            mmcRepository.sendMessage(contact.email)
         }
     }
 

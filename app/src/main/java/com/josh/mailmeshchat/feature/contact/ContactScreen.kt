@@ -114,7 +114,7 @@ fun ContactContent(
             contact = state.selectContact,
             showDialog = state.isShowContactDetailDialog,
             onDismiss = { onAction(ContactAction.OnContactDetailDialogDismiss) },
-            onSendMessageClick = {},
+            onSendMessageClick = { onAction(ContactAction.OnSendMessageClick(it)) },
             onDeleteClick = { onAction(ContactAction.OnDeleteContactClick(it)) }
         )
     }

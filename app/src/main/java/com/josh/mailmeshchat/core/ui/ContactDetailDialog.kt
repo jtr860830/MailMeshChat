@@ -91,7 +91,10 @@ fun ContactDetailDialog(
                             .size(56.dp)
                             .clip(RoundedCornerShape(28.dp))
                             .background(color = MaterialTheme.colorScheme.error),
-                        onClick = { onDeleteClick() }) {
+                        onClick = {
+                            onDeleteClick()
+                            onDismiss()
+                        }) {
                         Icon(imageVector = DeleteIcon, contentDescription = null)
                     }
                     MailMeshChatActionButton(
