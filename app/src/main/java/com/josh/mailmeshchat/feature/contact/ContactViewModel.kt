@@ -70,7 +70,8 @@ class ContactViewModel(
 
     private fun sendMessage(contact: Contact) {
         viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.sendMessage(contact.email)
+            val user = mmcRepository.getUser()!!.email
+            mmcRepository.sendMessage(arrayOf(contact.email, user))
         }
     }
 

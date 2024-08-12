@@ -16,7 +16,7 @@ class DefaultMmcRepository(
     private val localMessageDataSource: LocalMessageDataSource
 ) : MmcRepository {
 
-    override suspend fun sendMessage(to: String) {
+    override suspend fun sendMessage(to: Array<String>) {
         mailClient.sendMessage(to, "Hello")
     }
 
@@ -29,10 +29,8 @@ class DefaultMmcRepository(
             .map { it.map { mimeMessage -> mimeMessage.toMessage() } }
     }
 
-    override suspend fun reply(subject: String, replyMessage: String) {
-        mailClient.reply(subject, replyMessage, onSendSuccess = {
-            localMessageDataSource.insert(it)
-        })
+    override suspend fun replyMessage(subject: String, replyMessage: String) {
+        mailClient.replyMessage(subject, replyMessage)
     }
 
     override suspend fun connect() {

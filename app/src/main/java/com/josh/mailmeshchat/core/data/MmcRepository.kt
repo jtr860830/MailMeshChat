@@ -7,13 +7,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface MmcRepository {
 
-    suspend fun sendMessage(to: String)
+    suspend fun sendMessage(to: Array<String>)
 
     suspend fun fetchMessages(): Flow<List<Message>>
 
     suspend fun fetchMessagesBySubject(subject: String): Flow<List<Message>>
 
-    suspend fun reply(subject: String, replyMessage: String)
+    suspend fun replyMessage(subject: String, replyMessage: String)
 
     suspend fun connect()
 

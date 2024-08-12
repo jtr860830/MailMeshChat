@@ -1,12 +1,12 @@
 package com.josh.mailmeshchat.core.mailclient
 
+import android.util.Log
 import com.josh.mailmeshchat.core.data.model.Contact
 import com.josh.mailmeshchat.core.data.model.ContactSerializable
 import com.josh.mailmeshchat.core.data.model.UserInfo
 import com.josh.mailmeshchat.core.data.model.mapper.toContact
 import com.josh.mailmeshchat.core.data.model.mapper.toContactSerializable
 import com.josh.mailmeshchat.core.sharedpreference.UserStorage
-import com.josh.mailmeshchat.core.util.removeAllPrefixes
 import com.sun.mail.imap.IMAPFolder
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -15,13 +15,17 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
-import javax.mail.*
+import javax.mail.Flags
+import javax.mail.Folder
+import javax.mail.Message
+import javax.mail.Session
+import javax.mail.Store
+import javax.mail.Transport
 import javax.mail.event.MessageCountEvent
 import javax.mail.event.MessageCountListener
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 import javax.mail.search.SubjectTerm
-import com.josh.mailmeshchat.core.data.model.Message as LocalMessage
 
 
 // todo: decoupling userStorage from JavaMailClient
@@ -36,22 +40,24 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
     protected abstract fun configureIMAP(): Store
 
     suspend fun sendMessage(
-        to: String,
+        to: Array<String>,
         message: String,
     ) {
+        val recipients = to.map { InternetAddress(it) }.toTypedArray()
         smtpSession?.let {
             val uuid = UUID.randomUUID().toString()
 
             val mail = MimeMessage(smtpSession).apply {
-                setHeader("X-MMC-Id", uuid)
-                setHeader("X-MMC-Timestamp", System.currentTimeMillis().toString())
+                setHeader(HEADER_ID, uuid)
+                setHeader(HEADER_TIMESTAMP, System.currentTimeMillis().toString())
                 setFrom(InternetAddress(userInfo?.email))
-                setRecipients(Message.RecipientType.TO, InternetAddress.parse(to))
+                setRecipients(Message.RecipientType.TO, recipients)
                 subject = uuid
                 setText(message)
             }
 
             Transport.send(mail)
+            // todo: check is necessary to append message when send to self
             appendMessage(mail)
         }
     }
@@ -63,12 +69,27 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
         folder.close(false)
     }
 
+    private fun moveMessageToFolder() {
+        val sourceFolder = store!!.getFolder(FOLDER_INBOX)
+        sourceFolder.open(Folder.READ_WRITE)
+
+        val messages = sourceFolder?.messages
+        messages?.let {
+            for (message in messages) {
+                val hasMMCId = message.getHeader("X-MMC-Id")?.isNotEmpty() == true
+                if (hasMMCId) appendMessage(message)
+            }
+        }
+
+        sourceFolder.close(true)
+    }
+
     fun fetchMessages(): Flow<List<Message>> {
         return flow {
             val folder = getFolder(FOLDER_MESSAGES)
             folder.open(Folder.READ_ONLY)
 
-            val messages = folder.messages
+            val messages = folder.messages.filter { !it.subject.startsWith("Re: ") }
             emit(messages.toList())
             folder.close(false)
         }
@@ -85,34 +106,30 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
         }
     }
 
-    suspend fun reply(
+    suspend fun replyMessage(
         subject: String,
-        replyMessage: String,
-        onSendSuccess: suspend (message: LocalMessage) -> Unit
+        replyMessage: String
     ) {
         smtpSession?.let {
-            try {
-                val messageToReply = inbox?.search(SubjectTerm(subject))?.firstOrNull()
-                messageToReply?.let { originalMessage ->
-                    val message = MimeMessage(smtpSession).apply {
-                        setFrom(InternetAddress(userInfo?.email))
-                        setRecipients(Message.RecipientType.TO, originalMessage.from)
-                        setSubject("Re: ${originalMessage.subject}")
-                        setText(replyMessage)
-                        replyTo = originalMessage.replyTo ?: originalMessage.from
-                    }
-                    Transport.send(message)
-                    onSendSuccess.invoke(
-                        LocalMessage(
-                            sender = userInfo?.email ?: "",
-                            subject = originalMessage.subject.removeAllPrefixes("Re: "),
-                            message = replyMessage,
-                            timestamp = System.currentTimeMillis()
-                        )
-                    )
-                } ?: throw Exception("Original message not found")
-            } catch (e: Exception) {
-                e.printStackTrace()
+            val folder = getFolder(FOLDER_MESSAGES)
+            folder.open(Folder.READ_ONLY)
+
+            val messages = folder.search(SubjectTerm(subject))
+            messages.sortBy { it.sentDate }
+
+            val rootMessage = messages?.firstOrNull()
+            rootMessage?.let { originalMessage ->
+                val message = MimeMessage(smtpSession).apply {
+                    setHeader(HEADER_ID, originalMessage.subject)
+                    setHeader(HEADER_TIMESTAMP, System.currentTimeMillis().toString())
+                    setFrom(InternetAddress(userInfo?.email))
+                    setRecipients(Message.RecipientType.TO, originalMessage.allRecipients)
+                    setSubject("Re: ${originalMessage.subject}")
+                    setText(replyMessage)
+                }
+                Transport.send(message)
+                // todo: check is necessary to append message when send to self
+                appendMessage(message)
             }
         }
     }
@@ -124,6 +141,8 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
 
             store = configureIMAP()
             store?.connect(userInfo?.email, userInfo?.password)
+
+            moveMessageToFolder()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -224,8 +243,12 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
     }
 
     companion object {
+        const val FOLDER_INBOX = "INBOX"
         const val FOLDER_CONTACTS = "mmc/contacts"
         const val FOLDER_MESSAGES = "mmc/messages"
         const val FOLDER_GROUPS = "mmc/groups"
+
+        const val HEADER_ID = "X-MMC-Id"
+        const val HEADER_TIMESTAMP = "X-MMC-Timestamp"
     }
 }

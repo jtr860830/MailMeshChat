@@ -53,7 +53,7 @@ class ChatViewModel(
                 val message = state.inputMessage.text.toString()
                 val subject = state.subject
                 viewModelScope.launch(Dispatchers.IO) {
-                    mmcRepository.reply(subject, message)
+                    mmcRepository.replyMessage(subject, message)
                 }
             }
         }
