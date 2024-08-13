@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatBlack
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
+import com.josh.mailmeshchat.core.util.toTime
 
 @Composable
 fun CurrentUserMessageItem(modifier: Modifier = Modifier, message: Message) {
@@ -35,7 +36,7 @@ fun CurrentUserMessageItem(modifier: Modifier = Modifier, message: Message) {
     ) {
         Text(
             modifier = Modifier.padding(end = 8.dp),
-            text = message.timestamp.toString()
+            text = message.timestamp.toTime()
         )
         Box(
             modifier = Modifier
@@ -77,7 +78,7 @@ fun OtherUserMessageItem(modifier: Modifier = Modifier, message: Message) {
         }
         Text(
             modifier = Modifier.padding(start = 8.dp),
-            text = message.timestamp.toString(),
+            text = message.timestamp.toTime(),
             maxLines = 1
         )
     }
