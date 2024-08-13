@@ -84,8 +84,8 @@ fun GroupContent(
             ) {
                 items(state.groups) { group ->
                     ChatGroupItem(
-                        groupName = group,
-                        onClick = { onAction(GroupAction.OnGroupItemClick(group)) }
+                        groupName = group.name,
+                        onClick = { onAction(GroupAction.OnGroupItemClick(group.id)) }
                     )
                 }
             }

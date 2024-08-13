@@ -1,8 +1,10 @@
 package com.josh.mailmeshchat.core.data
 
 import com.josh.mailmeshchat.core.data.model.Contact
+import com.josh.mailmeshchat.core.data.model.Group
 import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.data.model.UserInfo
+import com.josh.mailmeshchat.core.data.model.mapper.toGroup
 import com.josh.mailmeshchat.core.data.model.mapper.toMessage
 import com.josh.mailmeshchat.core.database.datasource.LocalMessageDataSource
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient
@@ -16,12 +18,22 @@ class DefaultMmcRepository(
     private val localMessageDataSource: LocalMessageDataSource
 ) : MmcRepository {
 
-    override suspend fun sendMessage(to: Array<String>) {
-        mailClient.sendMessage(to, "Hello")
+    override suspend fun createGroup(to: Array<String>) {
+        mailClient.createGroup(to)
     }
 
-    override suspend fun fetchMessages(): Flow<List<Message>> {
-        return mailClient.fetchMessages().map { it.map { mimeMessage -> mimeMessage.toMessage() } }
+    override suspend fun fetchGroup(): Flow<List<Group>> {
+        return mailClient.fetchGroups().map {
+            it.map { mimeMessage ->
+                val group = mimeMessage.toGroup()
+                if (group.name.isEmpty()) {
+                    group.name = group.members
+                        .filter { email -> email != userStorage.get()?.email }
+                        .joinToString()
+                }
+                group
+            }
+        }
     }
 
     override suspend fun fetchMessagesBySubject(subject: String): Flow<List<Message>> {

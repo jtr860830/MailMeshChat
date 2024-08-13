@@ -1,10 +1,13 @@
 package com.josh.mailmeshchat.core.mailclient
 
+import android.util.Log
 import com.josh.mailmeshchat.core.data.model.Contact
-import com.josh.mailmeshchat.core.data.model.ContactSerializable
+import com.josh.mailmeshchat.core.data.model.Group
 import com.josh.mailmeshchat.core.data.model.UserInfo
 import com.josh.mailmeshchat.core.data.model.mapper.toContact
 import com.josh.mailmeshchat.core.data.model.mapper.toContactSerializable
+import com.josh.mailmeshchat.core.data.model.mapper.toGroupSerializable
+import com.josh.mailmeshchat.core.data.model.serializable.ContactSerializable
 import com.josh.mailmeshchat.core.sharedpreference.UserStorage
 import com.josh.mailmeshchat.core.util.removeAllPrefixes
 import com.sun.mail.imap.IMAPFolder
@@ -39,58 +42,68 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
     protected abstract fun configureSMTP(email: String?, password: String?): Session
     protected abstract fun configureIMAP(): Store
 
-    suspend fun sendMessage(
-        to: Array<String>,
-        message: String,
-    ) {
+    fun createGroup(to: Array<String>, name: String? = "") {
         val recipients = to.map { InternetAddress(it) }.toTypedArray()
         smtpSession?.let {
             val uuid = UUID.randomUUID().toString()
+            val group = Group(uuid, name!!, to.toList())
+            val message = Json.encodeToString(group.toGroupSerializable())
 
-            val mail = MimeMessage(smtpSession).apply {
-                setHeader(HEADER_ID, uuid)
+            val groupMessage = MimeMessage(smtpSession).apply {
                 setHeader(HEADER_TIMESTAMP, System.currentTimeMillis().toString())
+                setHeader(HEADER_GROUP, uuid)
                 setFrom(InternetAddress(userInfo?.email))
                 setRecipients(Message.RecipientType.TO, recipients)
                 subject = uuid
                 setText(message)
             }
+            Transport.send(groupMessage)
 
-            Transport.send(mail)
-            // todo: check is necessary to append message when send to self
-            appendMessage(mail)
+            val firstMessage = MimeMessage(smtpSession).apply {
+                setHeader(HEADER_ID, uuid)
+                setHeader(HEADER_TIMESTAMP, System.currentTimeMillis().toString())
+                setFrom(InternetAddress(userInfo?.email))
+                setRecipients(Message.RecipientType.TO, recipients)
+                subject = uuid
+                setText("This is the first message of the group, send by system.")
+            }
+            Transport.send(firstMessage)
+            appendMessage(FOLDER_MESSAGES, firstMessage)
         }
     }
 
-    private fun appendMessage(message: Message) {
-        val folder = getFolder(FOLDER_MESSAGES)
+    private fun appendMessage(folderName: String, message: Message) {
+        val folder = getFolder(folderName)
         folder.open(Folder.READ_WRITE)
         folder.appendMessages(arrayOf(message))
         folder.close(false)
     }
 
     private fun moveMessageToFolder() {
-        val sourceFolder = store!!.getFolder(FOLDER_INBOX)
-        sourceFolder.open(Folder.READ_WRITE)
+        val folder = store!!.getFolder(FOLDER_INBOX)
+        folder.open(Folder.READ_WRITE)
 
-        val messages = sourceFolder?.messages
+        val messages = folder?.messages
         messages?.let {
             for (message in messages) {
-                val hasMMCId = message.getHeader(HEADER_ID)?.isNotEmpty() == true
-                if (hasMMCId) appendMessage(message)
+                val isMessage = !message.getHeader(HEADER_ID).isNullOrEmpty()
+                if (isMessage) appendMessage(FOLDER_MESSAGES, message)
+
+                val isGroup = !message.getHeader(HEADER_GROUP).isNullOrEmpty()
+                if (isGroup) appendMessage(FOLDER_GROUPS, message)
             }
         }
 
-        sourceFolder.close(true)
+        folder.close(true)
     }
 
-    fun fetchMessages(): Flow<List<Message>> {
+    fun fetchGroups(): Flow<List<Message>> {
         return flow {
-            val folder = getFolder(FOLDER_MESSAGES)
+            val folder = getFolder(FOLDER_GROUPS)
             folder.open(Folder.READ_ONLY)
 
-            val messages = folder.messages.filter { !it.subject.startsWith("Re: ") }
-            emit(messages.toList())
+            Log.e("test", "fetchGroups: ${folder.messages.toList().size}")
+            emit(folder.messages.toList())
             folder.close(false)
         }
     }
@@ -116,9 +129,9 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
                     e?.messages?.toList()?.let {
                         for (message in it) {
                             val hasMMCId = message.getHeader(HEADER_ID)?.isNotEmpty() == true
-                            if (hasMMCId && message.subject.removeAllPrefixes("Re: ") == subject) trySend(
-                                it
-                            )
+                            if (hasMMCId && message.subject.removeAllPrefixes("Re: ") == subject) {
+                                trySend(it)
+                            }
                         }
                     }
                 }
@@ -163,7 +176,7 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
                 }
                 Transport.send(message)
                 // todo: check is necessary to append message when send to self
-                appendMessage(message)
+                appendMessage(FOLDER_MESSAGES, message)
             }
         }
     }
@@ -196,9 +209,6 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
 
     fun addContact(contact: Contact) {
         val folder = getFolder(FOLDER_CONTACTS)
-        if (!folder.exists()) {
-            folder.create(Folder.HOLDS_MESSAGES)
-        }
         folder.open(Folder.READ_WRITE)
 
         val message = MimeMessage(smtpSession)
@@ -284,5 +294,6 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
 
         const val HEADER_ID = "X-MMC-Id"
         const val HEADER_TIMESTAMP = "X-MMC-Timestamp"
+        const val HEADER_GROUP = "X-MMC-Group"
     }
 }

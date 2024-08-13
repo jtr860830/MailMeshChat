@@ -26,12 +26,8 @@ class GroupViewModel(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.fetchMessages().collect {
-                val messages = mutableSetOf<String>()
-                for (message in it) {
-                    messages.add(message.subject)
-                }
-                state = state.copy(groups = messages.toList())
+            mmcRepository.fetchGroup().collect {
+                state = state.copy(groups = it)
             }
         }
     }

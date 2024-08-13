@@ -1,4 +1,4 @@
-package com.josh.mailmeshchat.core.data.model
+package com.josh.mailmeshchat.core.data.model.serializable
 
 import kotlinx.serialization.Serializable
 

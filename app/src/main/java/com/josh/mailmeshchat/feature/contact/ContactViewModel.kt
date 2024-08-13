@@ -71,7 +71,7 @@ class ContactViewModel(
     private fun sendMessage(contact: Contact) {
         viewModelScope.launch(Dispatchers.IO) {
             val user = mmcRepository.getUser()!!.email
-            mmcRepository.sendMessage(arrayOf(contact.email, user))
+            mmcRepository.createGroup(arrayOf(contact.email, user))
         }
     }
 

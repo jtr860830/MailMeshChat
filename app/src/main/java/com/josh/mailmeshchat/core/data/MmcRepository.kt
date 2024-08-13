@@ -1,15 +1,16 @@
 package com.josh.mailmeshchat.core.data
 
 import com.josh.mailmeshchat.core.data.model.Contact
+import com.josh.mailmeshchat.core.data.model.Group
 import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.data.model.UserInfo
 import kotlinx.coroutines.flow.Flow
 
 interface MmcRepository {
 
-    suspend fun sendMessage(to: Array<String>)
+    suspend fun createGroup(to: Array<String>)
 
-    suspend fun fetchMessages(): Flow<List<Message>>
+    suspend fun fetchGroup(): Flow<List<Group>>
 
     suspend fun fetchMessagesBySubject(subject: String): Flow<List<Message>>
 
