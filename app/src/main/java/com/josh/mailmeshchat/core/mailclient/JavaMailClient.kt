@@ -1,12 +1,12 @@
 package com.josh.mailmeshchat.core.mailclient
 
-import android.util.Log
 import com.josh.mailmeshchat.core.data.model.Contact
 import com.josh.mailmeshchat.core.data.model.ContactSerializable
 import com.josh.mailmeshchat.core.data.model.UserInfo
 import com.josh.mailmeshchat.core.data.model.mapper.toContact
 import com.josh.mailmeshchat.core.data.model.mapper.toContactSerializable
 import com.josh.mailmeshchat.core.sharedpreference.UserStorage
+import com.josh.mailmeshchat.core.util.removeAllPrefixes
 import com.sun.mail.imap.IMAPFolder
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -76,7 +76,7 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
         val messages = sourceFolder?.messages
         messages?.let {
             for (message in messages) {
-                val hasMMCId = message.getHeader("X-MMC-Id")?.isNotEmpty() == true
+                val hasMMCId = message.getHeader(HEADER_ID)?.isNotEmpty() == true
                 if (hasMMCId) appendMessage(message)
             }
         }
@@ -103,6 +103,40 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
             val messages = folder.search(SubjectTerm(subject))
             emit(messages.toList())
             folder.close(false)
+        }
+    }
+
+    fun observeMessagesBySubject(subject: String): Flow<List<Message>> {
+        return callbackFlow {
+            val folder = store!!.getFolder(FOLDER_INBOX)
+            folder.open(Folder.READ_ONLY)
+
+            folder.addMessageCountListener(object : MessageCountListener {
+                override fun messagesAdded(e: MessageCountEvent?) {
+                    e?.messages?.toList()?.let {
+                        for (message in it) {
+                            val hasMMCId = message.getHeader(HEADER_ID)?.isNotEmpty() == true
+                            if (hasMMCId && message.subject.removeAllPrefixes("Re: ") == subject) trySend(
+                                it
+                            )
+                        }
+                    }
+                }
+
+                override fun messagesRemoved(e: MessageCountEvent?) {
+
+                }
+            })
+
+            var idle = true
+            while (idle) {
+                (folder as IMAPFolder).idle()
+            }
+
+            awaitClose {
+                idle = false
+                folder.close(false)
+            }
         }
     }
 

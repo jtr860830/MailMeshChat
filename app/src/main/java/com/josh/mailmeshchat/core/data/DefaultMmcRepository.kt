@@ -29,6 +29,11 @@ class DefaultMmcRepository(
             .map { it.map { mimeMessage -> mimeMessage.toMessage() } }
     }
 
+    override suspend fun observeMessageBySubject(subject: String): Flow<List<Message>> {
+        return mailClient.observeMessagesBySubject(subject)
+            .map { it.map { mimeMessage -> mimeMessage.toMessage() } }
+    }
+
     override suspend fun replyMessage(subject: String, replyMessage: String) {
         mailClient.replyMessage(subject, replyMessage)
     }
