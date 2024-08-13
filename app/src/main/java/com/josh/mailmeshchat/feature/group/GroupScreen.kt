@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.josh.mailmeshchat.R
+import com.josh.mailmeshchat.core.designsystem.GroupAddIcon
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
 import com.josh.mailmeshchat.core.designsystem.SearchIcon
 import com.josh.mailmeshchat.core.designsystem.components.GradientBackground
@@ -99,13 +100,14 @@ fun GroupContent(
         contentAlignment = Alignment.BottomEnd
     ) {
         MailMeshChatFloatActionButton(
+            icon = GroupAddIcon,
             onClick = { onAction(GroupAction.OnCreateGroupClick) }
         )
     }
     CreateGroupDialog(
         showDialog = state.isShowCreateGroupDialog,
         onDismiss = { onAction(GroupAction.OnCreateGroupDialogDismiss) },
-        onSubmit = { onAction(GroupAction.OnCreateGroupSubmit(it)) }
+        onSubmit = { name, email -> onAction(GroupAction.OnCreateGroupSubmit(name, email)) }
     )
 }
 

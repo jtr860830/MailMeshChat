@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.josh.mailmeshchat.R
 import com.josh.mailmeshchat.core.designsystem.LogoutIcon
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
+import com.josh.mailmeshchat.core.designsystem.PersonAddIcon
 import com.josh.mailmeshchat.core.designsystem.SearchIcon
 import com.josh.mailmeshchat.core.designsystem.components.GradientBackground
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatFloatActionButton
@@ -101,6 +102,7 @@ fun ContactContent(
         contentAlignment = Alignment.BottomEnd
     ) {
         MailMeshChatFloatActionButton(
+            icon = PersonAddIcon,
             onClick = { onAction(ContactAction.OnCreateGroupClick) }
         )
     }

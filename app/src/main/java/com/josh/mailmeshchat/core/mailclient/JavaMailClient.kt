@@ -1,6 +1,5 @@
 package com.josh.mailmeshchat.core.mailclient
 
-import android.util.Log
 import com.josh.mailmeshchat.core.data.model.Contact
 import com.josh.mailmeshchat.core.data.model.Group
 import com.josh.mailmeshchat.core.data.model.UserInfo
@@ -102,7 +101,6 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
             val folder = getFolder(FOLDER_GROUPS)
             folder.open(Folder.READ_ONLY)
 
-            Log.e("test", "fetchGroups: ${folder.messages.toList().size}")
             emit(folder.messages.toList())
             folder.close(false)
         }

@@ -37,7 +37,7 @@ class ChatViewModel(
 
         viewModelScope.launch(Dispatchers.IO) {
             mmcRepository.fetchMessagesBySubject(subject).collectLatest {
-                state = state.copy(messages = it)
+                state = state.copy(messages = it.sortedBy { message -> message.timestamp })
             }
         }
 

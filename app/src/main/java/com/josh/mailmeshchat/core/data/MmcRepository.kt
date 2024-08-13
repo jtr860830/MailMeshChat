@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface MmcRepository {
 
-    suspend fun createGroup(to: Array<String>)
+    suspend fun createGroup(to: Array<String>, name: String? = "")
 
     suspend fun fetchGroup(): Flow<List<Group>>
 

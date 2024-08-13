@@ -18,8 +18,8 @@ class DefaultMmcRepository(
     private val localMessageDataSource: LocalMessageDataSource
 ) : MmcRepository {
 
-    override suspend fun createGroup(to: Array<String>) {
-        mailClient.createGroup(to)
+    override suspend fun createGroup(to: Array<String>, name: String?) {
+        mailClient.createGroup(to, name)
     }
 
     override suspend fun fetchGroup(): Flow<List<Group>> {

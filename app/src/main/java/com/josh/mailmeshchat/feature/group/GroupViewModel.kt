@@ -45,7 +45,7 @@ class GroupViewModel(
             GroupAction.OnCreateGroupDialogDismiss -> hideCreateGroupDialog()
 
             is GroupAction.OnCreateGroupSubmit -> {
-                createGroup(action.email)
+                createGroup(action.name, action.email)
             }
 
             is GroupAction.OnGroupItemClick -> {
@@ -61,9 +61,12 @@ class GroupViewModel(
         }
     }
 
-    private fun createGroup(email: String) {
+    private fun createGroup(name: String, email: String) {
         viewModelScope.launch(Dispatchers.IO) {
-//            mmcRepository.sendMessage(email)
+            val user = mmcRepository.getUser()!!.email
+            val group = email.split(",").toMutableList()
+            group.add(user)
+            mmcRepository.createGroup(name = name, to = group.toTypedArray())
         }
     }
 

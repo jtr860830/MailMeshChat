@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.josh.mailmeshchat.R
+import com.josh.mailmeshchat.core.designsystem.GroupIcon
 import com.josh.mailmeshchat.core.designsystem.MailIcon
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatActionButton
@@ -33,10 +34,11 @@ import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatTextField
 fun CreateGroupDialog(
     showDialog: Boolean,
     onDismiss: () -> Unit,
-    onSubmit: (String) -> Unit
+    onSubmit: (String, String) -> Unit
 ) {
     if (showDialog) {
         Dialog(onDismissRequest = onDismiss) {
+            val name by remember { mutableStateOf(TextFieldState()) }
             val email by remember { mutableStateOf(TextFieldState()) }
 
             Column(
@@ -48,7 +50,7 @@ fun CreateGroupDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = stringResource(id = R.string.enter_group_email),
+                    text = stringResource(id = R.string.enter_group_detail),
                     style = MaterialTheme.typography.headlineMedium,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -58,10 +60,18 @@ fun CreateGroupDialog(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 MailMeshChatTextField(
+                    state = name,
+                    startIcon = GroupIcon,
+                    endIcon = null,
+                    hint = stringResource(id = R.string.example_name),
+                    title = null
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                MailMeshChatTextField(
                     state = email,
                     startIcon = MailIcon,
                     endIcon = null,
-                    hint = stringResource(id = R.string.example_email),
+                    hint = stringResource(id = R.string.example_group_email),
                     title = null
                 )
                 Spacer(modifier = Modifier.height(32.dp))
@@ -71,7 +81,7 @@ fun CreateGroupDialog(
                     isLoading = false,
                     onClick = {
                         if (email.text.isNotBlank()) {
-                            onSubmit(email.text.toString())
+                            onSubmit(name.text.toString(), email.text.toString())
                         }
                         onDismiss()
                     })
@@ -84,6 +94,6 @@ fun CreateGroupDialog(
 @Composable
 private fun CreateGroupDialogPreview() {
     MailMeshChatTheme {
-        CreateGroupDialog(showDialog = true, onDismiss = {}, onSubmit = {})
+        CreateGroupDialog(showDialog = true, onDismiss = {}, onSubmit = { _, _ -> })
     }
 }

@@ -60,13 +60,13 @@ enum class LandingDestination(
     val iconTextRes: Int,
 ) {
     CONTACT(
-        selectedIcon = R.drawable.contacts,
-        unselectedIcon = R.drawable.contacts_filled,
+        selectedIcon = R.drawable.contacts_filled,
+        unselectedIcon = R.drawable.contacts,
         iconTextRes = R.string.contacts
     ),
     MESSAGE(
-        selectedIcon = R.drawable.message,
-        unselectedIcon = R.drawable.message_filled,
+        selectedIcon = R.drawable.message_filled,
+        unselectedIcon = R.drawable.message,
         iconTextRes = R.string.message
     )
 }

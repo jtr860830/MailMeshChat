@@ -23,4 +23,6 @@
     <string name="example_name">Josh</string>
     <string name="contact_detail">Contact Detail</string>
     <string name="send_message">Send Message</string>
+    <string name="example_group_email">example1@gmail.com, example2@gamil.com</string>
+    <string name="enter_group_detail">Enter Group Detail</string>
 </resources>
