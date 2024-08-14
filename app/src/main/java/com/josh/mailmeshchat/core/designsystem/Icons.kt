@@ -68,3 +68,7 @@ val GroupIcon: ImageVector
 val PersonAddIcon: ImageVector
     @Composable
     get() = ImageVector.vectorResource(id = R.drawable.person_add)
+
+val ImageIcon: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(id = R.drawable.image)

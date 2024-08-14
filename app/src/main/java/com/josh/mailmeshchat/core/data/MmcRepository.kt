@@ -1,5 +1,6 @@
 package com.josh.mailmeshchat.core.data
 
+import android.net.Uri
 import com.josh.mailmeshchat.core.data.model.Contact
 import com.josh.mailmeshchat.core.data.model.Group
 import com.josh.mailmeshchat.core.data.model.Message

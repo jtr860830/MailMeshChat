@@ -18,12 +18,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatBlack
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
+import com.josh.mailmeshchat.core.util.stringToByteArray
 import com.josh.mailmeshchat.core.util.toTime
+
+const val PREFIX_IMAGE = "/image/"
 
 @Composable
 fun CurrentUserMessageItem(modifier: Modifier = Modifier, message: Message) {
@@ -45,11 +51,20 @@ fun CurrentUserMessageItem(modifier: Modifier = Modifier, message: Message) {
                 .padding(16.dp)
                 .widthIn(max = LocalConfiguration.current.screenWidthDp.dp * 0.5f)
         ) {
-            Text(
-                text = message.message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MailMeshChatBlack
-            )
+            if (message.message.startsWith(PREFIX_IMAGE)) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(stringToByteArray(message.message.removePrefix(PREFIX_IMAGE)))
+                        .build(),
+                    contentDescription = null,
+                )
+            } else {
+                Text(
+                    text = message.message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MailMeshChatBlack
+                )
+            }
         }
     }
 }
@@ -70,11 +85,20 @@ fun OtherUserMessageItem(modifier: Modifier = Modifier, message: Message) {
                 .padding(16.dp)
                 .widthIn(max = LocalConfiguration.current.screenWidthDp.dp * 0.5f)
         ) {
-            Text(
-                text = message.message.trim(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MailMeshChatBlack
-            )
+            if (message.message.startsWith(PREFIX_IMAGE)) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(stringToByteArray(message.message.removePrefix(PREFIX_IMAGE)))
+                        .build(),
+                    contentDescription = null,
+                )
+            } else {
+                Text(
+                    text = message.message.trim(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MailMeshChatBlack
+                )
+            }
         }
         Text(
             modifier = Modifier.padding(start = 8.dp),

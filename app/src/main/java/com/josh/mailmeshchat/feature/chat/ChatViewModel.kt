@@ -2,6 +2,7 @@
 
 package com.josh.mailmeshchat.feature.chat
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,6 +12,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.josh.mailmeshchat.core.data.MmcRepository
 import com.josh.mailmeshchat.core.data.model.Message
+import com.josh.mailmeshchat.core.ui.PREFIX_IMAGE
+import com.josh.mailmeshchat.core.util.bitmapToString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
@@ -69,6 +72,25 @@ class ChatViewModel(
                 viewModelScope.launch(Dispatchers.IO) {
                     mmcRepository.replyMessage(subject, message)
                 }
+            }
+
+            is ChatAction.OnImageSelected -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    action.image.let {
+                        BitmapFactory.decodeStream(
+                            action.context.contentResolver.openInputStream(it)
+                        )?.let { bitmap ->
+                            mmcRepository.replyMessage(
+                                state.subject,
+                                "$PREFIX_IMAGE${bitmapToString(bitmap)}"
+                            )
+                        }
+                    }
+                }
+            }
+
+            is ChatAction.OnTextFieldFocused -> {
+                state = state.copy(isTextFieldFocus = action.isFocused)
             }
         }
     }

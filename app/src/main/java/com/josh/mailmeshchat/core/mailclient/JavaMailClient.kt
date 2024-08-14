@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
+import javax.activation.DataHandler
 import javax.mail.Flags
 import javax.mail.Folder
 import javax.mail.Message
@@ -26,8 +27,11 @@ import javax.mail.Transport
 import javax.mail.event.MessageCountEvent
 import javax.mail.event.MessageCountListener
 import javax.mail.internet.InternetAddress
+import javax.mail.internet.MimeBodyPart
 import javax.mail.internet.MimeMessage
+import javax.mail.internet.MimeMultipart
 import javax.mail.search.SubjectTerm
+import javax.mail.util.ByteArrayDataSource
 
 
 // todo: decoupling userStorage from JavaMailClient
@@ -173,7 +177,6 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
                     setText(replyMessage)
                 }
                 Transport.send(message)
-                // todo: check is necessary to append message when send to self
                 appendMessage(FOLDER_MESSAGES, message)
             }
         }

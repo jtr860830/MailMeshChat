@@ -11,4 +11,5 @@ data class ChatState(
     val user: String = "",
     val messages: List<Message> = listOf(),
     val inputMessage: TextFieldState = TextFieldState(),
+    val isTextFieldFocus: Boolean = false
 )
