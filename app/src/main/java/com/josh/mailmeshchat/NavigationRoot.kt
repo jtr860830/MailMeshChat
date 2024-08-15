@@ -116,6 +116,7 @@ fun LandingNavGraph(
                     onGroupItemClick = { subject, user ->
                         rootNavController.navigate("chat/$subject/$user")
                     },
+                    sharedViewModel = sharedViewModel,
                     bottomBarPadding = padding
                 )
             }
@@ -132,6 +133,7 @@ fun LandingNavGraph(
                     onGroupItemClick = { subject, user ->
                         rootNavController.navigate("chat/$subject/$user")
                     },
+                    sharedViewModel = sharedViewModel,
                     bottomBarPadding = padding
                 )
             }

@@ -40,4 +40,6 @@ interface MmcRepository {
     fun fetchContacts(): Flow<List<Contact>>
 
     fun observeContacts(): Flow<Unit>
+
+    fun observeGroups(): Flow<Unit>
 }

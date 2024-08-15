@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
-import javax.activation.DataHandler
 import javax.mail.Flags
 import javax.mail.Folder
 import javax.mail.Message
@@ -27,11 +26,8 @@ import javax.mail.Transport
 import javax.mail.event.MessageCountEvent
 import javax.mail.event.MessageCountListener
 import javax.mail.internet.InternetAddress
-import javax.mail.internet.MimeBodyPart
 import javax.mail.internet.MimeMessage
-import javax.mail.internet.MimeMultipart
 import javax.mail.search.SubjectTerm
-import javax.mail.util.ByteArrayDataSource
 
 
 // todo: decoupling userStorage from JavaMailClient
@@ -61,6 +57,7 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
                 setText(message)
             }
             Transport.send(groupMessage)
+            appendMessage(FOLDER_GROUPS, groupMessage)
 
             val firstMessage = MimeMessage(smtpSession).apply {
                 setHeader(HEADER_ID, uuid)
@@ -252,9 +249,17 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
         folder.close(true)
     }
 
-    fun observeContact(): Flow<Unit> {
+    private fun getFolder(folderName: String): Folder {
+        val folder = store!!.getFolder(folderName)
+        if (!folder.exists()) {
+            folder.create(Folder.HOLDS_MESSAGES)
+        }
+        return folder
+    }
+
+    fun observeFolder(folderName: String): Flow<Unit> {
         return callbackFlow {
-            val folder = getFolder(FOLDER_CONTACTS)
+            val folder = getFolder(folderName)
             folder.open(Folder.READ_ONLY)
 
             folder.addMessageCountListener(object : MessageCountListener {
@@ -277,14 +282,6 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
                 idle = false
             }
         }
-    }
-
-    private fun getFolder(folderName: String): Folder {
-        val folder = store!!.getFolder(folderName)
-        if (!folder.exists()) {
-            folder.create(Folder.HOLDS_MESSAGES)
-        }
-        return folder
     }
 
     companion object {

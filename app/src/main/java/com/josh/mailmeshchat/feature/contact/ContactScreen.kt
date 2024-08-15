@@ -13,11 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.josh.mailmeshchat.MainState
+import com.josh.mailmeshchat.MainViewModel
 import com.josh.mailmeshchat.R
 import com.josh.mailmeshchat.core.designsystem.LogoutIcon
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
@@ -38,8 +41,14 @@ fun ContactScreen(
     onLogoutSuccess: () -> Unit,
     onGroupItemClick: (subject: String, user: String) -> Unit,
     viewModel: ContactViewModel = koinViewModel(),
+    sharedViewModel: MainViewModel,
     bottomBarPadding: PaddingValues
 ) {
+    LaunchedEffect(key1 = true) {
+        sharedViewModel.fetchContact()
+        sharedViewModel.observeContact()
+    }
+
     ObserveAsEvents(flow = viewModel.events) {
         when (it) {
             ContactEvent.LogoutSuccess -> onLogoutSuccess()
@@ -49,6 +58,7 @@ fun ContactScreen(
 
     ContactContent(
         viewModel.state,
+        sharedViewModel.state,
         viewModel::onAction,
         bottomBarPadding = bottomBarPadding
     )
@@ -57,6 +67,7 @@ fun ContactScreen(
 @Composable
 fun ContactContent(
     state: ContactState,
+    sharedState: MainState,
     onAction: (ContactAction) -> Unit,
     bottomBarPadding: PaddingValues
 ) {
@@ -85,7 +96,7 @@ fun ContactContent(
             LazyColumn(
                 modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                items(state.contacts) { contact ->
+                items(sharedState.contacts) { contact ->
                     ContactItem(
                         name = contact.name,
                         onClick = { onAction(ContactAction.OnContactItemClick(contact)) }
@@ -128,6 +139,7 @@ private fun ContactScreenPreview() {
     MailMeshChatTheme {
         ContactContent(
             state = ContactState(),
+            sharedState = MainState(),
             onAction = {},
             PaddingValues()
         )

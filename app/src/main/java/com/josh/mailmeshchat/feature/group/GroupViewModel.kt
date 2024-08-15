@@ -24,10 +24,6 @@ class GroupViewModel(
     private val eventChannel = Channel<GroupEvent>()
     val events = eventChannel.receiveAsFlow()
 
-    init {
-//        fetchGroup()
-    }
-
     fun onAction(action: GroupAction) {
         when (action) {
             GroupAction.OnLogoutClick -> {
@@ -55,15 +51,10 @@ class GroupViewModel(
                 }
             }
 
-            GroupAction.OnRefresh -> fetchGroup()
-        }
-    }
-
-    private fun fetchGroup() {
-        state = state.copy(isRefreshing = true)
-        viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.fetchGroup().collect {
-                state = state.copy(groups = it, isRefreshing = false)
+            GroupAction.OnRefresh -> {
+                viewModelScope.launch {
+                    eventChannel.send(GroupEvent.OnSwipeRefresh)
+                }
             }
         }
     }

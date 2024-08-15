@@ -11,11 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.josh.mailmeshchat.MainState
+import com.josh.mailmeshchat.MainViewModel
 import com.josh.mailmeshchat.R
 import com.josh.mailmeshchat.core.designsystem.GroupAddIcon
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
@@ -35,17 +38,24 @@ fun GroupScreen(
     onLogoutSuccess: () -> Unit,
     onGroupItemClick: (subject: String, user: String) -> Unit,
     viewModel: GroupViewModel = koinViewModel(),
+    sharedViewModel: MainViewModel,
     bottomBarPadding: PaddingValues
 ) {
+    LaunchedEffect(key1 = true) {
+        sharedViewModel.fetchGroup()
+    }
+
     ObserveAsEvents(flow = viewModel.events) {
         when (it) {
             GroupEvent.LogoutSuccess -> onLogoutSuccess()
             is GroupEvent.OnGroupItemClick -> onGroupItemClick(it.subject, it.user)
+            GroupEvent.OnSwipeRefresh -> sharedViewModel.fetchGroup()
         }
     }
 
     GroupContent(
         viewModel.state,
+        sharedViewModel.state,
         viewModel::onAction,
         bottomBarPadding = bottomBarPadding
     )
@@ -54,6 +64,7 @@ fun GroupScreen(
 @Composable
 fun GroupContent(
     state: GroupState,
+    sharedState: MainState,
     onAction: (GroupAction) -> Unit,
     bottomBarPadding: PaddingValues
 ) {
@@ -80,14 +91,14 @@ fun GroupContent(
             )
             Spacer(modifier = Modifier.height(16.dp))
             PullToRefreshLazyColumn(
-                items = state.groups,
+                items = sharedState.groups,
                 content = { group ->
                     ChatGroupItem(
                         groupName = group.name,
                         onClick = { onAction(GroupAction.OnGroupItemClick(group.id)) }
                     )
                 },
-                isRefreshing = state.isRefreshing,
+                isRefreshing = sharedState.isGroupsRefreshing,
                 onRefresh = {
                     onAction(GroupAction.OnRefresh)
                 },
@@ -120,6 +131,7 @@ private fun GroupScreenPreview() {
     MailMeshChatTheme {
         GroupContent(
             state = GroupState(),
+            sharedState = MainState(),
             onAction = {},
             PaddingValues()
         )

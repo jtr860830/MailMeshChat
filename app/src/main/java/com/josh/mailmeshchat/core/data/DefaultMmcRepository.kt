@@ -8,6 +8,8 @@ import com.josh.mailmeshchat.core.data.model.mapper.toGroup
 import com.josh.mailmeshchat.core.data.model.mapper.toMessage
 import com.josh.mailmeshchat.core.database.datasource.LocalMessageDataSource
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient
+import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.FOLDER_CONTACTS
+import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.FOLDER_GROUPS
 import com.josh.mailmeshchat.core.sharedpreference.UserStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -91,6 +93,10 @@ class DefaultMmcRepository(
     }
 
     override fun observeContacts(): Flow<Unit> {
-        return mailClient.observeContact()
+        return mailClient.observeFolder(FOLDER_CONTACTS)
+    }
+
+    override fun observeGroups(): Flow<Unit> {
+        return mailClient.observeFolder(FOLDER_GROUPS)
     }
 }

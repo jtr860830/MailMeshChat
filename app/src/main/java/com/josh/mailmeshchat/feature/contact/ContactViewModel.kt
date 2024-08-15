@@ -12,7 +12,6 @@ import com.josh.mailmeshchat.core.data.MmcRepository
 import com.josh.mailmeshchat.core.data.model.Contact
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -25,15 +24,6 @@ class ContactViewModel(
 
     private val eventChannel = Channel<ContactEvent>()
     val events = eventChannel.receiveAsFlow()
-
-    init {
-        fetchContact()
-        viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.observeContacts().collectLatest {
-                fetchContact()
-            }
-        }
-    }
 
     fun onAction(action: ContactAction) {
         when (action) {
@@ -78,14 +68,6 @@ class ContactViewModel(
     private fun addContact(contact: Contact) {
         viewModelScope.launch(Dispatchers.IO) {
             mmcRepository.addContact(contact)
-        }
-    }
-
-    private fun fetchContact() {
-        viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.fetchContacts().collectLatest {
-                state = state.copy(contacts = it)
-            }
         }
     }
 

@@ -6,8 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.josh.mailmeshchat.core.data.MmcRepository
-import com.josh.mailmeshchat.core.sharedpreference.UserStorage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -16,6 +17,9 @@ class MainViewModel(
 
     var state by mutableStateOf(MainState())
         private set
+
+    private var observeContactJob: Job? = null
+    private var observeGroupJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -30,6 +34,55 @@ class MainViewModel(
             mmcRepository.connect()
         }
     }
+
+    fun fetchContact() {
+        viewModelScope.launch(Dispatchers.IO) {
+            mmcRepository.fetchContacts().collectLatest {
+                state = state.copy(contacts = it)
+            }
+        }
+    }
+
+    fun observeContact() {
+        if (observeContactJob == null) {
+            observeContactJob = viewModelScope.launch(Dispatchers.IO) {
+                mmcRepository.observeContacts().collectLatest {
+                    fetchContact()
+                }
+            }
+            observeContactJob?.start()
+        }
+    }
+
+    fun fetchGroup() {
+        state = state.copy(isGroupsRefreshing = true)
+        viewModelScope.launch(Dispatchers.IO) {
+            mmcRepository.fetchGroup().collect { groups ->
+                groups.map {
+                    if (it.name.contains("@")) {
+                        state.contacts.find { contact ->
+                            contact.email == it.name
+                        }?.let { contact ->
+                            it.name = contact.name
+                        }
+                    }
+                }
+                state = state.copy(groups = groups.sortedBy { it.name }, isGroupsRefreshing = false)
+            }
+        }
+    }
+
+    fun observeGroup() {
+        if (observeGroupJob == null) {
+            observeGroupJob = viewModelScope.launch(Dispatchers.IO) {
+                mmcRepository.observeGroups().collectLatest {
+                    fetchGroup()
+                }
+            }
+            observeGroupJob?.start()
+        }
+    }
+
 
     fun disconnect() {
         viewModelScope.launch(Dispatchers.IO) {
