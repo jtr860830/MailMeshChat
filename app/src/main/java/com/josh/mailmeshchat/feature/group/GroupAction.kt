@@ -6,4 +6,5 @@ sealed interface GroupAction {
     data class OnGroupItemClick(val subject: String) : GroupAction
     data object OnCreateGroupDialogDismiss : GroupAction
     data class OnCreateGroupSubmit(val name: String, val email: String) : GroupAction
+    data object OnRefresh : GroupAction
 }
