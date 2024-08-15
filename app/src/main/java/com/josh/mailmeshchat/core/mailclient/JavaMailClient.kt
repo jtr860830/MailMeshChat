@@ -250,6 +250,9 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
     }
 
     private fun getFolder(folderName: String): Folder {
+        if (!store!!.isConnected) {
+            store!!.connect(userInfo?.email, userInfo?.password)
+        }
         val folder = store!!.getFolder(folderName)
         if (!folder.exists()) {
             folder.create(Folder.HOLDS_MESSAGES)

@@ -2,6 +2,12 @@ package com.josh.mailmeshchat.feature.group
 
 sealed interface GroupEvent {
     data object LogoutSuccess : GroupEvent
-    data class OnGroupItemClick(val subject: String, val user: String) : GroupEvent
+
+    data class OnGroupItemClick(
+        val uuid: String,
+        val subject: String,
+        val userEmail: String
+    ) : GroupEvent
+
     data object OnSwipeRefresh : GroupEvent
 }

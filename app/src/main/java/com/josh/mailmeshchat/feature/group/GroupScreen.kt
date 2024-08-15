@@ -36,7 +36,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun GroupScreen(
     onLogoutSuccess: () -> Unit,
-    onGroupItemClick: (subject: String, user: String) -> Unit,
+    onGroupItemClick: (uuid: String, subject: String, userEmail: String) -> Unit,
     viewModel: GroupViewModel = koinViewModel(),
     sharedViewModel: MainViewModel,
     bottomBarPadding: PaddingValues
@@ -48,7 +48,7 @@ fun GroupScreen(
     ObserveAsEvents(flow = viewModel.events) {
         when (it) {
             GroupEvent.LogoutSuccess -> onLogoutSuccess()
-            is GroupEvent.OnGroupItemClick -> onGroupItemClick(it.subject, it.user)
+            is GroupEvent.OnGroupItemClick -> onGroupItemClick(it.uuid, it.subject, it.userEmail)
             GroupEvent.OnSwipeRefresh -> sharedViewModel.fetchGroup()
         }
     }
@@ -95,7 +95,14 @@ fun GroupContent(
                 content = { group ->
                     ChatGroupItem(
                         groupName = group.name,
-                        onClick = { onAction(GroupAction.OnGroupItemClick(group.id)) }
+                        onClick = {
+                            onAction(
+                                GroupAction.OnGroupItemClick(
+                                    uuid = group.id,
+                                    subject = group.name
+                                )
+                            )
+                        }
                     )
                 },
                 isRefreshing = sharedState.isGroupsRefreshing,

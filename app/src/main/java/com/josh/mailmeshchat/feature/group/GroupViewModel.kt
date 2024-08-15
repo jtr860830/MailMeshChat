@@ -44,6 +44,7 @@ class GroupViewModel(
                 viewModelScope.launch {
                     eventChannel.send(
                         GroupEvent.OnGroupItemClick(
+                            action.uuid,
                             action.subject,
                             mmcRepository.getUser()!!.email
                         )

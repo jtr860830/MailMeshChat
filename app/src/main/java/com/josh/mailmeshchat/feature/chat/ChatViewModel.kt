@@ -31,21 +31,22 @@ class ChatViewModel(
     private val eventChannel = Channel<ChatEvent>()
     val events = eventChannel.receiveAsFlow()
 
+    private val uuid: String = checkNotNull(savedStateHandle["uuid"])
     private val subject: String = checkNotNull(savedStateHandle["subject"])
-    private val user: String = checkNotNull(savedStateHandle["user"])
+    private val user: String = checkNotNull(savedStateHandle["userEmail"])
 
     init {
         state = state.copy(subject = subject)
         state = state.copy(user = user)
 
         viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.fetchMessagesBySubject(subject).collectLatest {
+            mmcRepository.fetchMessagesBySubject(uuid).collectLatest {
                 state = state.copy(messages = it.sortedBy { message -> message.timestamp })
             }
         }
 
         viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.observeMessageBySubject(subject).collect {
+            mmcRepository.observeMessageBySubject(uuid).collect {
                 val newMessages = mutableSetOf<Message>()
                 for (message in state.messages) {
                     newMessages.add(message)
@@ -68,9 +69,8 @@ class ChatViewModel(
 
             is ChatAction.OnSendClick -> {
                 val message = state.inputMessage.text.toString()
-                val subject = state.subject
                 viewModelScope.launch(Dispatchers.IO) {
-                    mmcRepository.replyMessage(subject, message)
+                    mmcRepository.replyMessage(uuid, message)
                 }
             }
 
@@ -81,7 +81,7 @@ class ChatViewModel(
                             action.context.contentResolver.openInputStream(it)
                         )?.let { bitmap ->
                             mmcRepository.replyMessage(
-                                state.subject,
+                                uuid,
                                 "$PREFIX_IMAGE${bitmapToString(bitmap)}"
                             )
                         }

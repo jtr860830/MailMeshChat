@@ -2,9 +2,7 @@
 
 package com.josh.mailmeshchat.core.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -18,7 +16,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun <T> PullToRefreshLazyColumn(
@@ -36,10 +33,8 @@ fun <T> PullToRefreshLazyColumn(
     ) {
         LazyColumn(
             state = lazyListState,
-            contentPadding = PaddingValues(8.dp),
             modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .fillMaxSize()
         ) {
             items(items) {
                 content(it)
