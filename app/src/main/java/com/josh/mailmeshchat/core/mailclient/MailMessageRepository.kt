@@ -87,7 +87,6 @@ fun JavaMailClient.replyMessage(
                 setText(replyMessage)
             }
             Transport.send(message)
-            appendMessage(FOLDER_MESSAGES, message)
         }
     }
 }

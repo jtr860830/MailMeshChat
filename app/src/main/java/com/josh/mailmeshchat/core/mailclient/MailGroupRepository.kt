@@ -7,6 +7,7 @@ import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.FOLDER_MES
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.HEADER_GROUP
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.HEADER_ID
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.HEADER_TIMESTAMP
+import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.PREFIX_GROUP
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.encodeToString
@@ -30,11 +31,10 @@ fun JavaMailClient.createGroup(to: Array<String>, name: String? = "") {
             setHeader(HEADER_GROUP, uuid)
             setFrom(InternetAddress(userInfo?.email))
             setRecipients(Message.RecipientType.TO, recipients)
-            subject = uuid
+            subject = "$PREFIX_GROUP$uuid"
             setText(message)
         }
         Transport.send(groupMessage)
-        appendMessage(FOLDER_GROUPS, groupMessage)
 
         val firstMessage = MimeMessage(smtpSession).apply {
             setHeader(HEADER_ID, uuid)
@@ -45,7 +45,6 @@ fun JavaMailClient.createGroup(to: Array<String>, name: String? = "") {
             setText("This is the first message of the group, send by system.")
         }
         Transport.send(firstMessage)
-        appendMessage(FOLDER_MESSAGES, firstMessage)
     }
 }
 

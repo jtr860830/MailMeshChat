@@ -26,10 +26,9 @@ import coil.request.ImageRequest
 import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatBlack
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
+import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.PREFIX_IMAGE
 import com.josh.mailmeshchat.core.util.stringToByteArray
 import com.josh.mailmeshchat.core.util.toTime
-
-const val PREFIX_IMAGE = "/image/"
 
 @Composable
 fun CurrentUserMessageItem(modifier: Modifier = Modifier, message: Message) {

@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.josh.mailmeshchat.core.data.MmcRepository
 import com.josh.mailmeshchat.core.data.model.Message
-import com.josh.mailmeshchat.core.ui.PREFIX_IMAGE
+import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.PREFIX_IMAGE
 import com.josh.mailmeshchat.core.util.bitmapToString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel

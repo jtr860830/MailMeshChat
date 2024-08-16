@@ -87,5 +87,8 @@ class JavaMailClient {
         const val HEADER_ID = "X-MMC-Id"
         const val HEADER_TIMESTAMP = "X-MMC-Timestamp"
         const val HEADER_GROUP = "X-MMC-Group"
+
+        const val PREFIX_IMAGE = "/image/"
+        const val PREFIX_GROUP = "/group/"
     }
 }
