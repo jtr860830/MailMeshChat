@@ -32,7 +32,6 @@ fun NavigationRoot(
     NavHost(
         navController = navController,
         startDestination = if (sharedViewModel.state.isLoggedIn) {
-            sharedViewModel.connect()
             "landing"
         } else {
             "onboarding"

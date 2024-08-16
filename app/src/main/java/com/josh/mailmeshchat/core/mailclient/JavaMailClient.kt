@@ -36,7 +36,6 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
     private var smtpSession: Session? = null
     private var userInfo: UserInfo? = null
     private var store: Store? = null
-    private var inbox: Folder? = null
 
     protected abstract fun configureSMTP(email: String?, password: String?): Session
     protected abstract fun configureIMAP(): Store
@@ -94,7 +93,27 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
             }
         }
 
-        folder.close(true)
+        folder.addMessageCountListener(object : MessageCountListener {
+            override fun messagesAdded(e: MessageCountEvent?) {
+                e?.messages?.toList()?.let {
+                    for (message in it) {
+                        val isMessage = !message.getHeader(HEADER_ID).isNullOrEmpty()
+                        if (isMessage) appendMessage(FOLDER_MESSAGES, message)
+
+                        val isGroup = !message.getHeader(HEADER_GROUP).isNullOrEmpty()
+                        if (isGroup) appendMessage(FOLDER_GROUPS, message)
+                    }
+                }
+            }
+
+            override fun messagesRemoved(e: MessageCountEvent?) {
+
+            }
+        })
+
+        while (true) {
+            (folder as IMAPFolder).idle()
+        }
     }
 
     fun fetchGroups(): Flow<List<Message>> {
@@ -199,10 +218,6 @@ abstract class JavaMailClient(private val userStorage: UserStorage) {
         if (store?.isConnected == true) {
             store?.close()
         }
-        if (inbox?.isOpen == true) {
-            inbox?.close(false)
-        }
-
     }
 
     fun addContact(contact: Contact) {

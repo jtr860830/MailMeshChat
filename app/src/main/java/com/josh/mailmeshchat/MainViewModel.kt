@@ -27,6 +27,12 @@ class MainViewModel(
             state = state.copy(isLoggedIn = mmcRepository.getUser() != null)
             state = state.copy(isCheckingLoginState = false)
         }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            if (mmcRepository.getUser() != null) {
+                connect()
+            }
+        }
     }
 
     fun connect() {
