@@ -69,7 +69,13 @@ class LoginViewModel(
     private fun login() {
         viewModelScope.launch {
             state = state.copy(isLoading = true)
-            mmcRepository.setUser(UserInfo(state.email.text.toString(), state.password.text.toString()))
+            mmcRepository.setUser(
+                UserInfo(
+                    state.email.text.toString(),
+                    state.password.text.toString(),
+                    state.host.text.toString()
+                )
+            )
             delay(1000L)
             state = state.copy(isLoading = false)
             eventChannel.send(LoginEvent.LoginSuccess)

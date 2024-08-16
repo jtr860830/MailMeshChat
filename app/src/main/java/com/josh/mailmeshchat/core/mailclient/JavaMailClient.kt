@@ -7,7 +7,7 @@ import com.josh.mailmeshchat.core.data.model.mapper.toContact
 import com.josh.mailmeshchat.core.data.model.mapper.toContactSerializable
 import com.josh.mailmeshchat.core.data.model.mapper.toGroupSerializable
 import com.josh.mailmeshchat.core.data.model.serializable.ContactSerializable
-import com.josh.mailmeshchat.core.sharedpreference.UserStorage
+import com.josh.mailmeshchat.core.sharedpreference.UserInfoStorage
 import com.josh.mailmeshchat.core.util.removeAllPrefixes
 import com.sun.mail.imap.IMAPFolder
 import kotlinx.coroutines.channels.awaitClose
@@ -31,7 +31,7 @@ import javax.mail.search.SubjectTerm
 
 
 // todo: decoupling userStorage from JavaMailClient
-abstract class JavaMailClient(private val userStorage: UserStorage) {
+abstract class JavaMailClient(private val userStorage: UserInfoStorage) {
 
     private var smtpSession: Session? = null
     private var userInfo: UserInfo? = null

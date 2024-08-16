@@ -25,4 +25,6 @@
     <string name="send_message">Send Message</string>
     <string name="example_group_email">example1@gmail.com, example2@gamil.com</string>
     <string name="enter_group_detail">Enter Group Detail</string>
+    <string name="host">Host</string>
+    <string name="example_host">gmail.com</string>
 </resources>

@@ -12,8 +12,8 @@ import com.josh.mailmeshchat.core.database.datasource.LocalMessageDataSource
 import com.josh.mailmeshchat.core.database.datasource.RoomLocalMessageDataSource
 import com.josh.mailmeshchat.core.mailclient.GmailClient
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient
-import com.josh.mailmeshchat.core.sharedpreference.EncryptedUserStorage
-import com.josh.mailmeshchat.core.sharedpreference.UserStorage
+import com.josh.mailmeshchat.core.sharedpreference.EncryptedUserInfoStorage
+import com.josh.mailmeshchat.core.sharedpreference.UserInfoStorage
 import com.josh.mailmeshchat.core.util.validator.EmailPatternValidator
 import com.josh.mailmeshchat.core.util.validator.PatternValidator
 import com.josh.mailmeshchat.core.util.validator.UserDataValidator
@@ -42,7 +42,7 @@ val appModule = module {
     }
 
     singleOf(::UserDataValidator)
-    singleOf(::EncryptedUserStorage).bind<UserStorage>()
+    singleOf(::EncryptedUserInfoStorage).bind<UserInfoStorage>()
     singleOf(::RoomLocalMessageDataSource).bind<LocalMessageDataSource>()
     singleOf(::GmailClient).bind<JavaMailClient>()
     singleOf(::DefaultMmcRepository).bind<MmcRepository>()

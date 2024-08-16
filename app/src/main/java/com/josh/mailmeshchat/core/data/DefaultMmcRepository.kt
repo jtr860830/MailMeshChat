@@ -10,12 +10,12 @@ import com.josh.mailmeshchat.core.database.datasource.LocalMessageDataSource
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.FOLDER_CONTACTS
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.FOLDER_GROUPS
-import com.josh.mailmeshchat.core.sharedpreference.UserStorage
+import com.josh.mailmeshchat.core.sharedpreference.UserInfoStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class DefaultMmcRepository(
-    private val userStorage: UserStorage,
+    private val userStorage: UserInfoStorage,
     private val mailClient: JavaMailClient,
     private val localMessageDataSource: LocalMessageDataSource
 ) : MmcRepository {

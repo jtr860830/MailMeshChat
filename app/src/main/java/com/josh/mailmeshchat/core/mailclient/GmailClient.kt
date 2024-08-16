@@ -1,13 +1,13 @@
 package com.josh.mailmeshchat.core.mailclient
 
-import com.josh.mailmeshchat.core.sharedpreference.UserStorage
+import com.josh.mailmeshchat.core.sharedpreference.UserInfoStorage
 import java.util.Properties
 import javax.mail.PasswordAuthentication
 import javax.mail.Session
 import javax.mail.Store
 
 class GmailClient(
-    userStorage: UserStorage,
+    userStorage: UserInfoStorage,
 ) : JavaMailClient(userStorage) {
 
     override fun configureSMTP(email: String?, password: String?): Session {

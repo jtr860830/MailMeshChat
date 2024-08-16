@@ -4,15 +4,15 @@ import android.content.SharedPreferences
 import com.josh.mailmeshchat.core.data.model.UserInfo
 import com.josh.mailmeshchat.core.data.model.mapper.toUserInfo
 import com.josh.mailmeshchat.core.data.model.mapper.toUserInfoSerializable
-import com.josh.mailmeshchat.core.sharedpreference.serializable.UserInfoSerializable
+import com.josh.mailmeshchat.core.data.model.serializable.UserInfoSerializable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class EncryptedUserStorage(
+class EncryptedUserInfoStorage(
     private val sharedPreferences: SharedPreferences
-) : UserStorage {
+) : UserInfoStorage {
 
     override suspend fun get(): UserInfo? {
         return withContext(Dispatchers.IO) {

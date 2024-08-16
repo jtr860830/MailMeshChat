@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.josh.mailmeshchat.R
 import com.josh.mailmeshchat.core.designsystem.CheckIcon
+import com.josh.mailmeshchat.core.designsystem.DomainIcon
 import com.josh.mailmeshchat.core.designsystem.MailIcon
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
 import com.josh.mailmeshchat.core.designsystem.components.GradientBackground
@@ -88,6 +89,16 @@ fun LoginContent(
                 hint = stringResource(id = R.string.example_password),
                 title = stringResource(id = R.string.password),
                 modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            MailMeshChatTextField(
+                state = state.email,
+                startIcon = DomainIcon,
+                endIcon = null,
+                hint = stringResource(id = R.string.example_host),
+                title = stringResource(id = R.string.host),
+                modifier = Modifier.fillMaxWidth(),
+                keyboardType = KeyboardType.Email
             )
         }
         Spacer(modifier = Modifier.weight(1f))

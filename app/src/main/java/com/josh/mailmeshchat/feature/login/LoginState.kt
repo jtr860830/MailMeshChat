@@ -10,6 +10,7 @@ data class LoginState(
     val isEmailValid: Boolean = false,
     val password: TextFieldState = TextFieldState(),
     val isPasswordNotEmpty: Boolean = false,
+    val host: TextFieldState = TextFieldState(),
     val isPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
     val canLogin: Boolean = false,
