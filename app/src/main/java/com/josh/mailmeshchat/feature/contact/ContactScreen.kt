@@ -39,7 +39,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun ContactScreen(
     onLogoutSuccess: () -> Unit,
-    onGroupItemClick: (uuid: String, subject: String, user: String) -> Unit,
+    onSendMessageClick: (uuid: String, subject: String, user: String) -> Unit,
     viewModel: ContactViewModel = koinViewModel(),
     sharedViewModel: MainViewModel,
     bottomBarPadding: PaddingValues
@@ -52,7 +52,7 @@ fun ContactScreen(
     ObserveAsEvents(flow = viewModel.events) {
         when (it) {
             ContactEvent.LogoutSuccess -> onLogoutSuccess()
-            is ContactEvent.OnGroupItemClick -> onGroupItemClick(it.uuid, it.subject, it.user)
+            is ContactEvent.ContactGroupFound -> onSendMessageClick(it.uuid, it.subject, it.user)
         }
     }
 
@@ -126,6 +126,7 @@ fun ContactContent(
         ContactDetailDialog(
             contact = state.selectContact,
             showDialog = state.isShowContactDetailDialog,
+            isFindingGroup = state.isFindingGroup,
             onDismiss = { onAction(ContactAction.OnContactDetailDialogDismiss) },
             onSendMessageClick = { onAction(ContactAction.OnSendMessageClick(it)) },
             onDeleteClick = { onAction(ContactAction.OnDeleteContactClick(it)) }

@@ -9,6 +9,7 @@ import com.josh.mailmeshchat.core.data.model.Contact
 data class ContactState(
     val search: TextFieldState = TextFieldState(),
     val selectContact: Contact? = null,
+    val isFindingGroup: Boolean = false,
     val isShowCreateGroupDialog: Boolean = false,
     val isShowContactDetailDialog: Boolean = false
 )

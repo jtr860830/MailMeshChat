@@ -12,6 +12,7 @@ import com.josh.mailmeshchat.core.data.MmcRepository
 import com.josh.mailmeshchat.core.data.model.Contact
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -54,15 +55,38 @@ class ContactViewModel(
             }
 
             is ContactAction.OnSendMessageClick -> {
-                sendMessage(action.contact)
+                sendMessageOrCreateGroup(action.contact)
             }
         }
     }
 
-    private fun sendMessage(contact: Contact) {
+    private fun sendMessageOrCreateGroup(contact: Contact) {
+        state = state.copy(isFindingGroup = true)
         viewModelScope.launch(Dispatchers.IO) {
             val user = mmcRepository.getUser()!!.email
-            mmcRepository.createGroup(arrayOf(contact.email, user))
+            var groupId = ""
+            mmcRepository.fetchGroup().collect { groups ->
+                groups.forEach {
+                    if (it.members.size == 2 && it.members.contains(user)) {
+                        groupId = it.id
+                    }
+                }
+            }
+            if (groupId.isEmpty()) {
+                createGroup(contact, user)
+            } else {
+                eventChannel.send(ContactEvent.ContactGroupFound(groupId, contact.name, user))
+                hideContactDetailDialog()
+            }
+        }
+    }
+
+    private fun createGroup(contact: Contact, userEmail: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            mmcRepository.createGroup(arrayOf(contact.email, userEmail)).collectLatest {
+                eventChannel.send(ContactEvent.ContactGroupFound(it, contact.name, userEmail))
+                hideContactDetailDialog()
+            }
         }
     }
 
@@ -92,6 +116,6 @@ class ContactViewModel(
     }
 
     private fun hideContactDetailDialog() {
-        state = state.copy(isShowContactDetailDialog = false)
+        state = state.copy(isShowContactDetailDialog = false, isFindingGroup = false)
     }
 }

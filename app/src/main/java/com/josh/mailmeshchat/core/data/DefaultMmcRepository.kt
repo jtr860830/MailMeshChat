@@ -63,8 +63,8 @@ class DefaultMmcRepository(
         return mailClient.observeFolder(FOLDER_CONTACTS)
     }
 
-    override suspend fun createGroup(to: Array<String>, name: String?) {
-        mailClient.createGroup(to, name)
+    override fun createGroup(to: Array<String>, name: String?): Flow<String> {
+        return mailClient.createGroup(to, name)
     }
 
     override suspend fun fetchGroup(): Flow<List<Group>> {

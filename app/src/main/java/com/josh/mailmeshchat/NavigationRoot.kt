@@ -118,7 +118,7 @@ fun LandingNavGraph(
                             }
                         }
                     },
-                    onGroupItemClick = { uuid, subject, userEmail ->
+                    onSendMessageClick = { uuid, subject, userEmail ->
                         rootNavController.navigate("chat/$uuid/$subject/$userEmail")
                     },
                     sharedViewModel = sharedViewModel,

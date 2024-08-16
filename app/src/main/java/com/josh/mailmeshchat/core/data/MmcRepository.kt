@@ -26,7 +26,7 @@ interface MmcRepository {
 
     fun observeContacts(): Flow<Unit>
 
-    suspend fun createGroup(to: Array<String>, name: String? = "")
+    fun createGroup(to: Array<String>, name: String? = ""): Flow<String>
 
     suspend fun fetchGroup(): Flow<List<Group>>
 

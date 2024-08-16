@@ -21,7 +21,6 @@ class MainViewModel(
         private set
 
     private var observeContactJob: Job? = null
-    private var observeGroupJob: Job? = null
 
     init {
         viewModelScope.launch {

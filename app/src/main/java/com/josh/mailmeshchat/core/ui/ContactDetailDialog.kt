@@ -40,6 +40,7 @@ import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatTextField
 fun ContactDetailDialog(
     contact: Contact,
     showDialog: Boolean,
+    isFindingGroup: Boolean,
     onDismiss: () -> Unit,
     onSendMessageClick: () -> Unit,
     onDeleteClick: () -> Unit
@@ -100,10 +101,9 @@ fun ContactDetailDialog(
                     MailMeshChatActionButton(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         text = stringResource(id = R.string.send_message),
-                        isLoading = false,
+                        isLoading = isFindingGroup,
                         onClick = {
                             onSendMessageClick()
-                            onDismiss()
                         })
                 }
             }
@@ -118,6 +118,7 @@ private fun ContactDetailDialogPreview() {
         ContactDetailDialog(
             Contact("123", "Josh", "example@gmail.com"),
             showDialog = true,
+            isFindingGroup = false,
             onDismiss = {},
             onSendMessageClick = {},
             onDeleteClick = {}
