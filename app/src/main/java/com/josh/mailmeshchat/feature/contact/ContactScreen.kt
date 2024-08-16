@@ -25,10 +25,8 @@ import com.josh.mailmeshchat.R
 import com.josh.mailmeshchat.core.designsystem.LogoutIcon
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
 import com.josh.mailmeshchat.core.designsystem.PersonAddIcon
-import com.josh.mailmeshchat.core.designsystem.SearchIcon
 import com.josh.mailmeshchat.core.designsystem.components.GradientBackground
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatFloatActionButton
-import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatTextField
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatToolBar
 import com.josh.mailmeshchat.core.ui.ContactDetailDialog
 import com.josh.mailmeshchat.core.ui.ContactItem
@@ -76,22 +74,14 @@ fun ContactContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = bottomBarPadding.calculateBottomPadding())
-                .padding(vertical = 32.dp)
-                .padding(top = 16.dp)
+                .padding(bottom = 32.dp)
         ) {
             MailMeshChatToolBar(
                 text = stringResource(id = R.string.contacts),
                 icon = LogoutIcon,
+                isSearchBar = true,
+                search = state.search,
                 onIconClick = { onAction(ContactAction.OnLogoutClick) })
-            Spacer(modifier = Modifier.height(8.dp))
-            MailMeshChatTextField(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                state = state.search,
-                startIcon = SearchIcon,
-                title = null,
-                endIcon = null,
-                hint = stringResource(id = R.string.search)
-            )
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(
                 modifier = Modifier.padding(horizontal = 16.dp)

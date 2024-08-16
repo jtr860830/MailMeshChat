@@ -22,10 +22,8 @@ import com.josh.mailmeshchat.MainViewModel
 import com.josh.mailmeshchat.R
 import com.josh.mailmeshchat.core.designsystem.GroupAddIcon
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
-import com.josh.mailmeshchat.core.designsystem.SearchIcon
 import com.josh.mailmeshchat.core.designsystem.components.GradientBackground
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatFloatActionButton
-import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatTextField
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatToolBar
 import com.josh.mailmeshchat.core.ui.ChatGroupItem
 import com.josh.mailmeshchat.core.ui.CreateGroupDialog
@@ -71,21 +69,12 @@ fun GroupContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = bottomBarPadding.calculateBottomPadding())
-                .padding(vertical = 32.dp)
-                .padding(top = 16.dp)
+                .padding(bottom = 32.dp)
         ) {
             MailMeshChatToolBar(
                 text = stringResource(id = R.string.group),
-                icon = null
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            MailMeshChatTextField(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                state = state.search,
-                startIcon = SearchIcon,
-                title = null,
-                endIcon = null,
-                hint = stringResource(id = R.string.search)
+                icon = null,
+                isSearchBar = true
             )
             Spacer(modifier = Modifier.height(16.dp))
             PullToRefreshLazyColumn(

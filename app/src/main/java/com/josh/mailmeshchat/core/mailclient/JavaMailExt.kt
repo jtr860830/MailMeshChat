@@ -15,10 +15,14 @@ import javax.mail.event.MessageCountEvent
 import javax.mail.event.MessageCountListener
 
 fun JavaMailClient.appendMessage(folderName: String, message: Message) {
-    val folder = getFolder(folderName)
-    folder.open(Folder.READ_WRITE)
-    folder.appendMessages(arrayOf(message))
-    folder.close(false)
+    try {
+        val folder = getFolder(folderName)
+        folder.open(Folder.READ_WRITE)
+        folder.appendMessages(arrayOf(message))
+        folder.close(false)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 fun JavaMailClient.getFolder(folderName: String): Folder {
@@ -61,40 +65,44 @@ fun JavaMailClient.observeFolder(folderName: String): Flow<Unit> {
 }
 
 fun JavaMailClient.distribution() {
-    val folder = store!!.getFolder(FOLDER_INBOX)
-    folder.open(Folder.READ_WRITE)
+    try {
+        val folder = store!!.getFolder(FOLDER_INBOX)
+        folder.open(Folder.READ_WRITE)
 
-    val messages = folder?.messages
-    messages?.let {
-        for (message in messages) {
-            val isMessage = !message.getHeader(HEADER_ID).isNullOrEmpty()
-            if (isMessage) appendMessage(FOLDER_MESSAGES, message)
+        val messages = folder?.messages
+        messages?.let {
+            for (message in messages) {
+                val isMessage = !message.getHeader(HEADER_ID).isNullOrEmpty()
+                if (isMessage) appendMessage(FOLDER_MESSAGES, message)
 
-            val isGroup = !message.getHeader(HEADER_GROUP).isNullOrEmpty()
-            if (isGroup) appendMessage(FOLDER_GROUPS, message)
-        }
-    }
-
-    folder.addMessageCountListener(object : MessageCountListener {
-        override fun messagesAdded(e: MessageCountEvent?) {
-            e?.messages?.toList()?.let {
-                for (message in it) {
-                    val isMessage = !message.getHeader(HEADER_ID).isNullOrEmpty()
-                    if (isMessage) appendMessage(FOLDER_MESSAGES, message)
-
-                    val isGroup = !message.getHeader(HEADER_GROUP).isNullOrEmpty()
-                    if (isGroup) appendMessage(FOLDER_GROUPS, message)
-                }
+                val isGroup = !message.getHeader(HEADER_GROUP).isNullOrEmpty()
+                if (isGroup) appendMessage(FOLDER_GROUPS, message)
             }
         }
 
-        override fun messagesRemoved(e: MessageCountEvent?) {
+        folder.addMessageCountListener(object : MessageCountListener {
+            override fun messagesAdded(e: MessageCountEvent?) {
+                e?.messages?.toList()?.let {
+                    for (message in it) {
+                        val isMessage = !message.getHeader(HEADER_ID).isNullOrEmpty()
+                        if (isMessage) appendMessage(FOLDER_MESSAGES, message)
 
+                        val isGroup = !message.getHeader(HEADER_GROUP).isNullOrEmpty()
+                        if (isGroup) appendMessage(FOLDER_GROUPS, message)
+                    }
+                }
+            }
+
+            override fun messagesRemoved(e: MessageCountEvent?) {
+
+            }
+        })
+
+        while (true) {
+            if (!folder.isOpen) break
+            (folder as IMAPFolder).idle()
         }
-    })
-
-    while (true) {
-        if (!folder.isOpen) break
-        (folder as IMAPFolder).idle()
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }

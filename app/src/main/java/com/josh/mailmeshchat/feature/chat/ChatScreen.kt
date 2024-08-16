@@ -87,8 +87,7 @@ fun ChatContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(vertical = 32.dp)
-                .padding(top = 16.dp)
+                .padding(bottom = 32.dp)
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = {
                         focusManager.clearFocus()
@@ -101,6 +100,7 @@ fun ChatContent(
                 startIcon = ArrowBackIcon,
                 onStartIconClick = { onAction(ChatAction.OnBackClick) }
             )
+            Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(
                 modifier = Modifier.weight(1f),
             ) {

@@ -79,7 +79,6 @@ class LoginViewModel(
                 mmcRepository.setUser(userInfo)
                 eventChannel.send(LoginEvent.LoginSuccess)
             } else {
-                Log.e("test", "login: false")
                 // todo: handle login failed
             }
             state = state.copy(isLoading = false)
