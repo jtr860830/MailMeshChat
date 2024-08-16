@@ -8,37 +8,33 @@ import kotlinx.coroutines.flow.Flow
 
 interface MmcRepository {
 
-    suspend fun createGroup(to: Array<String>, name: String? = "")
-
-    suspend fun fetchGroup(): Flow<List<Group>>
-
-    suspend fun fetchMessagesBySubject(subject: String): Flow<List<Message>>
-
-    suspend fun observeMessageBySubject(subject: String): Flow<List<Message>>
-
-    suspend fun replyMessage(subject: String, replyMessage: String)
-
-    fun login(userInfo: UserInfo): Boolean
-
-    fun logout()
-
     suspend fun getUser(): UserInfo?
 
     suspend fun setUser(info: UserInfo?)
 
     suspend fun removeUser()
 
-    fun getGroups(): Flow<List<String>>
+    fun login(userInfo: UserInfo): Boolean
 
-    fun getMessagesByGroup(subject: String): Flow<List<Message>>
+    fun logout()
 
-    suspend fun addContact(contact: Contact)
-
-    suspend fun deleteContact(contact: Contact)
+    suspend fun createContact(contact: Contact)
 
     fun fetchContacts(): Flow<List<Contact>>
 
+    suspend fun deleteContact(contact: Contact)
+
     fun observeContacts(): Flow<Unit>
 
+    suspend fun createGroup(to: Array<String>, name: String? = "")
+
+    suspend fun fetchGroup(): Flow<List<Group>>
+
     fun observeGroups(): Flow<Unit>
+
+    suspend fun replyMessage(subject: String, replyMessage: String)
+
+    suspend fun fetchMessagesBySubject(subject: String): Flow<List<Message>>
+
+    suspend fun observeMessageBySubject(subject: String): Flow<List<Message>>
 }

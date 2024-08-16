@@ -68,7 +68,7 @@ class ContactViewModel(
 
     private fun addContact(contact: Contact) {
         viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.addContact(contact)
+            mmcRepository.createContact(contact)
         }
     }
 
