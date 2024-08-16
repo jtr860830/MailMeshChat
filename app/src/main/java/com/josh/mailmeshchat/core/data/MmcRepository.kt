@@ -1,6 +1,5 @@
 package com.josh.mailmeshchat.core.data
 
-import android.net.Uri
 import com.josh.mailmeshchat.core.data.model.Contact
 import com.josh.mailmeshchat.core.data.model.Group
 import com.josh.mailmeshchat.core.data.model.Message
@@ -19,9 +18,9 @@ interface MmcRepository {
 
     suspend fun replyMessage(subject: String, replyMessage: String)
 
-    suspend fun connect()
+    fun login(userInfo: UserInfo): Boolean
 
-    suspend fun disconnect()
+    fun logout()
 
     suspend fun getUser(): UserInfo?
 

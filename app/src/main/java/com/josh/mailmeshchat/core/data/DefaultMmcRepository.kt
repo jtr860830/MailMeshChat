@@ -52,12 +52,12 @@ class DefaultMmcRepository(
         mailClient.replyMessage(subject, replyMessage)
     }
 
-    override suspend fun connect() {
-        mailClient.connect()
+    override fun login(userInfo: UserInfo): Boolean {
+        return mailClient.login(userInfo)
     }
 
-    override suspend fun disconnect() {
-        mailClient.disconnect()
+    override fun logout() {
+        mailClient.logout()
     }
 
     override suspend fun getUser(): UserInfo? {

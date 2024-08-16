@@ -92,7 +92,7 @@ fun LoginContent(
             )
             Spacer(modifier = Modifier.height(16.dp))
             MailMeshChatTextField(
-                state = state.email,
+                state = state.host,
                 startIcon = DomainIcon,
                 endIcon = null,
                 hint = stringResource(id = R.string.example_host),

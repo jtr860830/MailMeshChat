@@ -10,7 +10,6 @@ import com.josh.mailmeshchat.core.data.MmcRepository
 import com.josh.mailmeshchat.core.database.MailMeshChatDatabase
 import com.josh.mailmeshchat.core.database.datasource.LocalMessageDataSource
 import com.josh.mailmeshchat.core.database.datasource.RoomLocalMessageDataSource
-import com.josh.mailmeshchat.core.mailclient.GmailClient
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient
 import com.josh.mailmeshchat.core.sharedpreference.EncryptedUserInfoStorage
 import com.josh.mailmeshchat.core.sharedpreference.UserInfoStorage
@@ -44,7 +43,7 @@ val appModule = module {
     singleOf(::UserDataValidator)
     singleOf(::EncryptedUserInfoStorage).bind<UserInfoStorage>()
     singleOf(::RoomLocalMessageDataSource).bind<LocalMessageDataSource>()
-    singleOf(::GmailClient).bind<JavaMailClient>()
+    singleOf(::JavaMailClient)
     singleOf(::DefaultMmcRepository).bind<MmcRepository>()
 
     viewModelOf(::MainViewModel)

@@ -26,13 +26,6 @@ class GroupViewModel(
 
     fun onAction(action: GroupAction) {
         when (action) {
-            GroupAction.OnLogoutClick -> {
-                viewModelScope.launch(Dispatchers.IO) {
-                    mmcRepository.removeUser()
-                    eventChannel.send(GroupEvent.LogoutSuccess)
-                }
-            }
-
             GroupAction.OnCreateGroupClick -> showCreateGroupDialog()
             GroupAction.OnCreateGroupDialogDismiss -> hideCreateGroupDialog()
 

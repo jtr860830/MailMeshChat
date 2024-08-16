@@ -35,7 +35,6 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun GroupScreen(
-    onLogoutSuccess: () -> Unit,
     onGroupItemClick: (uuid: String, subject: String, userEmail: String) -> Unit,
     viewModel: GroupViewModel = koinViewModel(),
     sharedViewModel: MainViewModel,
@@ -47,7 +46,6 @@ fun GroupScreen(
 
     ObserveAsEvents(flow = viewModel.events) {
         when (it) {
-            GroupEvent.LogoutSuccess -> onLogoutSuccess()
             is GroupEvent.OnGroupItemClick -> onGroupItemClick(it.uuid, it.subject, it.userEmail)
             GroupEvent.OnSwipeRefresh -> sharedViewModel.fetchGroup()
         }

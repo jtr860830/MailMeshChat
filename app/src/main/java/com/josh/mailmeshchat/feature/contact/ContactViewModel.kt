@@ -29,6 +29,7 @@ class ContactViewModel(
         when (action) {
             ContactAction.OnLogoutClick -> {
                 viewModelScope.launch(Dispatchers.IO) {
+                    mmcRepository.logout()
                     mmcRepository.removeUser()
                     eventChannel.send(ContactEvent.LogoutSuccess)
                 }

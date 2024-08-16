@@ -2,6 +2,7 @@
 
 package com.josh.mailmeshchat.feature.login
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text2.input.textAsFlow
 import androidx.compose.runtime.getValue
@@ -12,8 +13,8 @@ import androidx.lifecycle.viewModelScope
 import com.josh.mailmeshchat.core.data.MmcRepository
 import com.josh.mailmeshchat.core.data.model.UserInfo
 import com.josh.mailmeshchat.core.util.validator.UserDataValidator
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -67,18 +68,21 @@ class LoginViewModel(
     }
 
     private fun login() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             state = state.copy(isLoading = true)
-            mmcRepository.setUser(
-                UserInfo(
-                    state.email.text.toString(),
-                    state.password.text.toString(),
-                    state.host.text.toString()
-                )
+            val userInfo = UserInfo(
+                state.email.text.toString(),
+                state.password.text.toString(),
+                state.host.text.toString()
             )
-            delay(1000L)
+            if (mmcRepository.login(userInfo)) {
+                mmcRepository.setUser(userInfo)
+                eventChannel.send(LoginEvent.LoginSuccess)
+            } else {
+                Log.e("test", "login: false")
+                // todo: handle login failed
+            }
             state = state.copy(isLoading = false)
-            eventChannel.send(LoginEvent.LoginSuccess)
         }
     }
 }

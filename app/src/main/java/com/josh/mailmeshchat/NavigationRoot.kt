@@ -37,7 +37,7 @@ fun NavigationRoot(
             "onboarding"
         }
     ) {
-        onboardingGraph(navController, sharedViewModel)
+        onboardingGraph(navController)
         composable(route = "landing") {
             LandingNavGraph(
                 selectedNavItem = selectedNavItem,
@@ -53,8 +53,7 @@ fun NavigationRoot(
 }
 
 private fun NavGraphBuilder.onboardingGraph(
-    navController: NavHostController,
-    sharedViewModel: MainViewModel
+    navController: NavHostController
 ) {
     navigation(
         startDestination = "intro",
@@ -68,7 +67,6 @@ private fun NavGraphBuilder.onboardingGraph(
         composable(route = "login") {
             LoginScreen(
                 onLoginSuccess = {
-                    sharedViewModel.connect()
                     navController.navigate("landing") {
                         popUpTo("login") {
                             inclusive = true
@@ -104,14 +102,6 @@ fun LandingNavGraph(
         NavHost(navController = navController, startDestination = "contact") {
             composable(route = "message") {
                 GroupScreen(
-                    onLogoutSuccess = {
-                        sharedViewModel.disconnect()
-                        rootNavController.navigate("onboarding") {
-                            popUpTo("landing") {
-                                inclusive = true
-                            }
-                        }
-                    },
                     onGroupItemClick = { uuid, subject, userEmail ->
                         rootNavController.navigate("chat/$uuid/$subject/$userEmail")
                     },
@@ -122,7 +112,6 @@ fun LandingNavGraph(
             composable(route = "contact") {
                 ContactScreen(
                     onLogoutSuccess = {
-                        sharedViewModel.disconnect()
                         rootNavController.navigate("onboarding") {
                             popUpTo("landing") {
                                 inclusive = true

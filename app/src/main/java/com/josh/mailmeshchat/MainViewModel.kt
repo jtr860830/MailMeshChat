@@ -29,15 +29,9 @@ class MainViewModel(
         }
 
         viewModelScope.launch(Dispatchers.IO) {
-            if (mmcRepository.getUser() != null) {
-                connect()
+            mmcRepository.getUser()?.let {
+                mmcRepository.login(it)
             }
-        }
-    }
-
-    fun connect() {
-        viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.connect()
         }
     }
 
@@ -92,12 +86,12 @@ class MainViewModel(
 
     fun disconnect() {
         viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.disconnect()
+            mmcRepository.logout()
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        disconnect()
+        mmcRepository.logout()
     }
 }

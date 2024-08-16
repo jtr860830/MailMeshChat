@@ -7,19 +7,23 @@ import com.josh.mailmeshchat.core.data.model.mapper.toContact
 import com.josh.mailmeshchat.core.data.model.mapper.toContactSerializable
 import com.josh.mailmeshchat.core.data.model.mapper.toGroupSerializable
 import com.josh.mailmeshchat.core.data.model.serializable.ContactSerializable
-import com.josh.mailmeshchat.core.sharedpreference.UserInfoStorage
 import com.josh.mailmeshchat.core.util.removeAllPrefixes
 import com.sun.mail.imap.IMAPFolder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.Properties
 import java.util.UUID
 import javax.mail.Flags
 import javax.mail.Folder
 import javax.mail.Message
+import javax.mail.PasswordAuthentication
 import javax.mail.Session
 import javax.mail.Store
 import javax.mail.Transport
@@ -29,16 +33,69 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 import javax.mail.search.SubjectTerm
 
-
-// todo: decoupling userStorage from JavaMailClient
-abstract class JavaMailClient(private val userStorage: UserInfoStorage) {
+class JavaMailClient {
 
     private var smtpSession: Session? = null
     private var userInfo: UserInfo? = null
     private var store: Store? = null
 
-    protected abstract fun configureSMTP(email: String?, password: String?): Session
-    protected abstract fun configureIMAP(): Store
+    fun login(userInfo: UserInfo): Boolean {
+        try {
+            this.userInfo = userInfo
+            smtpSession = configureSMTP(userInfo)
+            store = configureIMAP(userInfo)
+            store?.connect(userInfo.email, userInfo.password)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        if (store?.isConnected == true) {
+            // todo: save observer to a job, cancel it when logout
+            // GlobalScope.launch(Dispatchers.IO) { moveMessageToFolder() }
+            return true
+        }
+
+        return false
+    }
+
+    fun logout() {
+        try {
+            store?.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            smtpSession = null
+            userInfo = null
+            store = null
+        }
+    }
+
+    private fun configureSMTP(userInfo: UserInfo): Session {
+        val properties = Properties().apply {
+            put("mail.smtp.auth", "true")
+            put("mail.smtp.starttls.enable", "true")
+            put("mail.smtp.host", "smtp.${userInfo.host}")
+            put("mail.smtp.port", "587")
+        }
+
+        return Session.getInstance(properties, object : javax.mail.Authenticator() {
+            override fun getPasswordAuthentication(): PasswordAuthentication {
+                return PasswordAuthentication(userInfo.email, userInfo.password)
+            }
+        })
+    }
+
+    private fun configureIMAP(userInfo: UserInfo): Store {
+        val properties = Properties().apply {
+            put("mail.store.protocol", "imaps")
+            put("mail.imaps.host", "imap.${userInfo.host}")
+            put("mail.imaps.port", "993")
+            put("mail.imaps.ssl.enable", "true")
+        }
+
+        return Session.getDefaultInstance(properties, null).getStore("imaps")
+    }
+
 
     fun createGroup(to: Array<String>, name: String? = "") {
         val recipients = to.map { InternetAddress(it) }.toTypedArray()
@@ -112,6 +169,7 @@ abstract class JavaMailClient(private val userStorage: UserInfoStorage) {
         })
 
         while (true) {
+            if (!folder.isOpen) break
             (folder as IMAPFolder).idle()
         }
     }
@@ -171,7 +229,7 @@ abstract class JavaMailClient(private val userStorage: UserInfoStorage) {
         }
     }
 
-    suspend fun replyMessage(
+    fun replyMessage(
         subject: String,
         replyMessage: String
     ) {
@@ -195,28 +253,6 @@ abstract class JavaMailClient(private val userStorage: UserInfoStorage) {
                 Transport.send(message)
                 appendMessage(FOLDER_MESSAGES, message)
             }
-        }
-    }
-
-    suspend fun connect() {
-        try {
-            userInfo = userStorage.get()
-            smtpSession = configureSMTP(userInfo?.email, userInfo?.password)
-
-            store = configureIMAP()
-            store?.connect(userInfo?.email, userInfo?.password)
-
-            moveMessageToFolder()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    fun disconnect() {
-        smtpSession = null
-        userInfo = null
-        if (store?.isConnected == true) {
-            store?.close()
         }
     }
 
