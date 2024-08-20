@@ -2,6 +2,7 @@
 
 package com.josh.mailmeshchat.feature.group
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -112,11 +113,12 @@ fun GroupContent(
             onClick = { onAction(GroupAction.OnCreateGroupClick) }
         )
     }
-    CreateGroupDialog(
-        showDialog = state.isShowCreateGroupDialog,
-        onDismiss = { onAction(GroupAction.OnCreateGroupDialogDismiss) },
-        onSubmit = { name, email -> onAction(GroupAction.OnCreateGroupSubmit(name, email)) }
-    )
+    AnimatedVisibility(visible = state.isShowCreateGroupDialog) {
+        CreateGroupDialog(
+            onDismiss = { onAction(GroupAction.OnCreateGroupDialogDismiss) },
+            onSubmit = { name, email -> onAction(GroupAction.OnCreateGroupSubmit(name, email)) }
+        )
+    }
 }
 
 @Preview

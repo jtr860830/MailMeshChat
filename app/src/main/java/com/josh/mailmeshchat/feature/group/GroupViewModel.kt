@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.josh.mailmeshchat.core.data.MmcRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -58,7 +59,9 @@ class GroupViewModel(
             val user = mmcRepository.getUser()!!.email
             val group = email.split(",").toMutableList()
             group.add(user)
-            mmcRepository.createGroup(name = name, to = group.toTypedArray())
+            mmcRepository.createGroup(name = name, to = group.toTypedArray()).collectLatest {
+                hideCreateGroupDialog()
+            }
         }
     }
 

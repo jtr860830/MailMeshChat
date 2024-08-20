@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,98 +43,96 @@ import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatTextField
 
 @Composable
 fun CreateGroupDialog(
-    showDialog: Boolean,
     onDismiss: () -> Unit,
     onSubmit: (String, String) -> Unit
 ) {
-    if (showDialog) {
-        Dialog(onDismissRequest = onDismiss) {
-            val name by remember { mutableStateOf(TextFieldState()) }
-            val emails = remember { mutableStateListOf(TextFieldState()) }
+    Dialog(onDismissRequest = onDismiss) {
+        val name by remember { mutableStateOf(TextFieldState()) }
+        val emails = remember { mutableStateListOf(TextFieldState()) }
+        var isLoading by remember { mutableStateOf(false) }
 
-            Column(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(MaterialTheme.colorScheme.background)
-                    .padding(vertical = 40.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(id = R.string.enter_group_detail),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontSize = 22.sp
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(id = R.string.enter_group_email_description),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                MailMeshChatTextField(
-                    modifier = Modifier.padding(horizontal = 24.dp),
-                    state = name,
-                    startIcon = GroupIcon,
-                    endIcon = null,
-                    hint = stringResource(id = R.string.example_name),
-                    title = null
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                LazyColumn {
-                    items(emails.size) { index ->
-                        Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
-                            if (index == 0) {
-                                IconButton(onClick = {
-                                    emails.add(TextFieldState())
-                                }, modifier = Modifier.padding(start = 12.dp)) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .clip(CircleShape)
-                                            .background(color = MaterialTheme.colorScheme.primary),
-                                        imageVector = AddIcons,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.background
-                                    )
-                                }
-                            } else {
-                                IconButton(onClick = {
-                                    val field = emails[index]
-                                    field.clearText()
-                                    emails.remove(field)
-                                }, modifier = Modifier.padding(start = 12.dp)) {
-                                    Icon(
-                                        modifier = Modifier
-                                            .clip(CircleShape)
-                                            .background(color = MaterialTheme.colorScheme.error),
-                                        imageVector = RemoveIcons,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.background
-                                    )
-                                }
+        Column(
+            modifier = Modifier
+                .clip(RoundedCornerShape(28.dp))
+                .background(MaterialTheme.colorScheme.background)
+                .padding(vertical = 40.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(id = R.string.enter_group_detail),
+                style = MaterialTheme.typography.headlineMedium,
+                fontSize = 22.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(id = R.string.enter_group_email_description),
+                style = MaterialTheme.typography.bodySmall
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            MailMeshChatTextField(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                state = name,
+                startIcon = GroupIcon,
+                endIcon = null,
+                hint = stringResource(id = R.string.example_name),
+                title = null
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn {
+                items(emails.size) { index ->
+                    Row(modifier = Modifier, verticalAlignment = Alignment.CenterVertically) {
+                        if (index == 0) {
+                            IconButton(onClick = {
+                                emails.add(TextFieldState())
+                            }, modifier = Modifier.padding(start = 12.dp)) {
+                                Icon(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(color = MaterialTheme.colorScheme.primary),
+                                    imageVector = AddIcons,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.background
+                                )
                             }
-                            MailMeshChatTextField(
-                                modifier = Modifier.padding(end = 24.dp),
-                                state = emails[index],
-                                startIcon = MailIcon,
-                                endIcon = null,
-                                hint = stringResource(id = R.string.example_group_email),
-                                title = null
-                            )
+                        } else {
+                            IconButton(onClick = {
+                                val field = emails[index]
+                                field.clearText()
+                                emails.remove(field)
+                            }, modifier = Modifier.padding(start = 12.dp)) {
+                                Icon(
+                                    modifier = Modifier
+                                        .clip(CircleShape)
+                                        .background(color = MaterialTheme.colorScheme.error),
+                                    imageVector = RemoveIcons,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.background
+                                )
+                            }
                         }
+                        MailMeshChatTextField(
+                            modifier = Modifier.padding(end = 24.dp),
+                            state = emails[index],
+                            startIcon = MailIcon,
+                            endIcon = null,
+                            hint = stringResource(id = R.string.example_group_email),
+                            title = null
+                        )
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
-                MailMeshChatActionButton(
-                    modifier = Modifier.padding(horizontal = 40.dp),
-                    text = stringResource(id = R.string.submit),
-                    isLoading = false,
-                    onClick = {
-                        val emailString = emails.joinToString(",") { it.text.toString() }
-                        if (emailString.isNotEmpty() && name.text.isNotEmpty()) {
-                            onSubmit(name.text.toString(), emailString)
-                        }
-                        onDismiss()
-                    })
             }
+            Spacer(modifier = Modifier.height(32.dp))
+            MailMeshChatActionButton(
+                modifier = Modifier.padding(horizontal = 40.dp),
+                text = stringResource(id = R.string.submit),
+                isLoading = isLoading,
+                onClick = {
+                    val emailString = emails.joinToString(",") { it.text.toString() }
+                    if (emailString.isNotEmpty() && name.text.isNotEmpty()) {
+                        isLoading = true
+                        onSubmit(name.text.toString(), emailString)
+                    }
+                })
         }
     }
 }
@@ -142,6 +141,6 @@ fun CreateGroupDialog(
 @Composable
 private fun CreateGroupDialogPreview() {
     MailMeshChatTheme {
-        CreateGroupDialog(showDialog = true, onDismiss = {}, onSubmit = { _, _ -> })
+        CreateGroupDialog(onDismiss = {}, onSubmit = { _, _ -> })
     }
 }
