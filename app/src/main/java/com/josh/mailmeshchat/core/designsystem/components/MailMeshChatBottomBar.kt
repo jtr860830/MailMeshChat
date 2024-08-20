@@ -6,8 +6,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import com.josh.mailmeshchat.R
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatBlue5
 
@@ -22,6 +24,9 @@ fun MailMeshChatBottomBar(
     ) {
         destinations.forEachIndexed { index, destination ->
             NavigationBarItem(
+                label = {
+                    Text(text = stringResource(id = destination.iconTextRes))
+                },
                 icon = {
                     Column {
                         Icon(
@@ -67,6 +72,6 @@ enum class LandingDestination(
     MESSAGE(
         selectedIcon = R.drawable.message_filled,
         unselectedIcon = R.drawable.message,
-        iconTextRes = R.string.message
+        iconTextRes = R.string.group
     )
 }
