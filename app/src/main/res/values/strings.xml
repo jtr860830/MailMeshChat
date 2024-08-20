@@ -10,7 +10,7 @@
     <string name="password">password</string>
     <string name="example_password">Aa123456</string>
     <string name="login">Login</string>
-    <string name="group">Group</string>
+    <string name="group">Chats</string>
     <string name="search">Search</string>
     <string name="submit">Submit</string>
     <string name="enter_group_email">Enter email</string>
@@ -23,8 +23,8 @@
     <string name="example_name">Josh</string>
     <string name="contact_detail">Contact Detail</string>
     <string name="send_message">Send Message</string>
-    <string name="example_group_email">example1@gmail.com, example2@gamil.com</string>
-    <string name="enter_group_detail">Enter Group Detail</string>
+    <string name="example_group_email">test@gmail.com</string>
+    <string name="enter_group_detail">Enter Chat Room Detail</string>
     <string name="host">Host</string>
     <string name="example_host">gmail.com</string>
 </resources>

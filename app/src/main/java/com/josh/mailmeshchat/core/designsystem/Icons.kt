@@ -76,3 +76,11 @@ val ImageIcon: ImageVector
 val DomainIcon: ImageVector
     @Composable
     get() = ImageVector.vectorResource(id = R.drawable.domain)
+
+val AddIcons: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(id = R.drawable.add)
+
+val RemoveIcons: ImageVector
+    @Composable
+    get() = ImageVector.vectorResource(id = R.drawable.remove)
