@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -31,79 +32,109 @@ import com.josh.mailmeshchat.core.util.stringToByteArray
 import com.josh.mailmeshchat.core.util.toTime
 
 @Composable
-fun CurrentUserMessageItem(modifier: Modifier = Modifier, message: Message) {
-    Row(
+fun CurrentUserMessageItem(modifier: Modifier = Modifier, message: Message, isShowSender: Boolean) {
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(end = 16.dp),
-        horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.Bottom
+        horizontalAlignment = Alignment.End,
     ) {
-        Text(
-            modifier = Modifier.padding(end = 8.dp),
-            text = message.timestamp.toTime()
-        )
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 28.dp))
-                .background(MaterialTheme.colorScheme.secondary)
-                .padding(16.dp)
-                .widthIn(max = LocalConfiguration.current.screenWidthDp.dp * 0.5f)
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(end = 16.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.Bottom
         ) {
-            if (message.message.startsWith(PREFIX_IMAGE)) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(stringToByteArray(message.message.removePrefix(PREFIX_IMAGE)))
-                        .build(),
-                    contentDescription = null,
-                )
-            } else {
-                Text(
-                    text = message.message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MailMeshChatBlack
-                )
+            Text(
+                modifier = Modifier.padding(end = 8.dp),
+                text = message.timestamp.toTime()
+            )
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 28.dp))
+                    .background(MaterialTheme.colorScheme.secondary)
+                    .padding(16.dp)
+                    .widthIn(max = LocalConfiguration.current.screenWidthDp.dp * 0.5f)
+            ) {
+                if (message.message.startsWith(PREFIX_IMAGE)) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(stringToByteArray(message.message.removePrefix(PREFIX_IMAGE)))
+                            .build(),
+                        contentDescription = null,
+                    )
+                } else {
+                    Text(
+                        text = message.message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MailMeshChatBlack
+                    )
+                }
             }
+        }
+        if (isShowSender) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                modifier = Modifier.padding(end = 16.dp),
+                text = message.sender,
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
     }
 }
 
 @Composable
-fun OtherUserMessageItem(modifier: Modifier = Modifier, message: Message) {
-    Row(
+fun OtherUserMessageItem(modifier: Modifier = Modifier, message: Message, isShowSender: Boolean) {
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 12.dp),
-        verticalAlignment = Alignment.Bottom
+            .padding(end = 16.dp),
+        horizontalAlignment = Alignment.Start,
     ) {
-        Spacer(modifier = Modifier.width(8.dp))
-        Box(
-            Modifier
-                .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomEnd = 28.dp))
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(16.dp)
-                .widthIn(max = LocalConfiguration.current.screenWidthDp.dp * 0.5f)
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(start = 12.dp),
+            verticalAlignment = Alignment.Bottom
         ) {
-            if (message.message.startsWith(PREFIX_IMAGE)) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(stringToByteArray(message.message.removePrefix(PREFIX_IMAGE)))
-                        .build(),
-                    contentDescription = null,
-                )
-            } else {
-                Text(
-                    text = message.message.trim(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MailMeshChatBlack
-                )
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                Modifier
+                    .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomEnd = 28.dp))
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(16.dp)
+                    .widthIn(max = LocalConfiguration.current.screenWidthDp.dp * 0.5f)
+            ) {
+                if (message.message.startsWith(PREFIX_IMAGE)) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(stringToByteArray(message.message.removePrefix(PREFIX_IMAGE)))
+                            .build(),
+                        contentDescription = null,
+                    )
+                } else {
+                    Text(
+                        text = message.message.trim(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MailMeshChatBlack
+                    )
+                }
             }
+            Text(
+                modifier = Modifier.padding(start = 8.dp),
+                text = message.timestamp.toTime(),
+                maxLines = 1
+            )
         }
-        Text(
-            modifier = Modifier.padding(start = 8.dp),
-            text = message.timestamp.toTime(),
-            maxLines = 1
-        )
+        if (isShowSender) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                modifier = Modifier.padding(start = 16.dp),
+                text = message.sender,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
     }
 }
 
@@ -118,7 +149,8 @@ private fun MessageItemPreview() {
                     "tester2@gmail.com",
                     "test message",
                     0
-                )
+                ),
+                isShowSender = true
             )
             OtherUserMessageItem(
                 message = Message(
@@ -126,7 +158,8 @@ private fun MessageItemPreview() {
                     "tester2@gmail.com",
                     "test message",
                     0
-                )
+                ),
+                isShowSender = true
             )
         }
     }

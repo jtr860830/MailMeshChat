@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -104,11 +104,13 @@ fun ChatContent(
             LazyColumn(
                 modifier = Modifier.weight(1f),
             ) {
-                items(state.messages) { message ->
+                itemsIndexed(state.messages) { index, message ->
+                    val isShowSender =
+                        index == state.messages.size - 1 || (index < state.messages.size - 1 && message.sender != state.messages[index + 1].sender)
                     if (message.sender == state.user) {
-                        CurrentUserMessageItem(message = message)
+                        CurrentUserMessageItem(message = message, isShowSender = isShowSender)
                     } else {
-                        OtherUserMessageItem(message = message)
+                        OtherUserMessageItem(message = message, isShowSender = isShowSender)
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
