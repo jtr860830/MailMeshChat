@@ -40,7 +40,8 @@ class GroupViewModel(
                         GroupEvent.OnGroupItemClick(
                             action.uuid,
                             action.subject,
-                            mmcRepository.getUser()!!.email
+                            mmcRepository.getUser()!!.email,
+                            action.members
                         )
                     )
                 }

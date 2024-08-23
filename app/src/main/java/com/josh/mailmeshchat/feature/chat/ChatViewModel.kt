@@ -14,6 +14,7 @@ import com.josh.mailmeshchat.core.data.MmcRepository
 import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.PREFIX_IMAGE
 import com.josh.mailmeshchat.core.util.bitmapToString
+import com.josh.mailmeshchat.core.util.moveToFirst
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
@@ -34,10 +35,15 @@ class ChatViewModel(
     private val uuid: String = checkNotNull(savedStateHandle["uuid"])
     private val subject: String = checkNotNull(savedStateHandle["subject"])
     private val user: String = checkNotNull(savedStateHandle["userEmail"])
+    private val members: String? = savedStateHandle["members"]
 
     init {
         state = state.copy(subject = subject)
         state = state.copy(user = user)
+        members?.let {
+            val memberList = it.split(",").toMutableList().moveToFirst(user)
+            state = state.copy(members = memberList)
+        }
 
         viewModelScope.launch(Dispatchers.IO) {
             mmcRepository.fetchMessagesBySubject(uuid).collectLatest {
@@ -92,6 +98,30 @@ class ChatViewModel(
             is ChatAction.OnTextFieldFocused -> {
                 state = state.copy(isTextFieldFocus = action.isFocused)
             }
+
+            is ChatAction.OnGroupClick -> {
+                showEditGroupMemberDialog()
+            }
+
+            ChatAction.OnEditGroupMemberDialogDismiss -> {
+                hideEditGroupMemberDialog()
+            }
+
+            is ChatAction.OnEditGroupMemberSubmit -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val members = action.members.split(",")
+                    mmcRepository.updateGroupMembers(uuid, members)
+                    hideEditGroupMemberDialog()
+                }
+            }
         }
+    }
+
+    private fun showEditGroupMemberDialog() {
+        state = state.copy(isShowEditGroupDialog = true)
+    }
+
+    private fun hideEditGroupMemberDialog() {
+        state = state.copy(isShowEditGroupDialog = false)
     }
 }

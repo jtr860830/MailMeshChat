@@ -18,6 +18,7 @@ import com.josh.mailmeshchat.core.mailclient.fetchMessagesBySubject
 import com.josh.mailmeshchat.core.mailclient.observeFolder
 import com.josh.mailmeshchat.core.mailclient.observeMessagesBySubject
 import com.josh.mailmeshchat.core.mailclient.replyMessage
+import com.josh.mailmeshchat.core.mailclient.updateGroupMembers
 import com.josh.mailmeshchat.core.sharedpreference.UserInfoStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -68,7 +69,8 @@ class DefaultMmcRepository(
     }
 
     override suspend fun fetchGroup(): Flow<List<Group>> {
-        return mailClient.fetchGroups().map {
+        val userEmail = userStorage.get()?.email ?: ""
+        return mailClient.fetchGroups(userEmail).map {
             it.map { mimeMessage ->
                 val group = mimeMessage.toGroup()
                 if (group.name.isEmpty()) {
@@ -83,6 +85,10 @@ class DefaultMmcRepository(
 
     override fun observeGroups(): Flow<Unit> {
         return mailClient.observeFolder(FOLDER_GROUPS)
+    }
+
+    override suspend fun updateGroupMembers(uuid: String, members: List<String>) {
+        mailClient.updateGroupMembers(uuid, members)
     }
 
     override suspend fun replyMessage(subject: String, replyMessage: String) {

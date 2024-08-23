@@ -34,12 +34,14 @@ import androidx.compose.ui.unit.dp
 import com.josh.mailmeshchat.R
 import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.designsystem.ArrowBackIcon
+import com.josh.mailmeshchat.core.designsystem.GroupIcon
 import com.josh.mailmeshchat.core.designsystem.ImageIcon
 import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
 import com.josh.mailmeshchat.core.designsystem.components.GradientBackground
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatMessageTextField
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatToolBar
 import com.josh.mailmeshchat.core.ui.CurrentUserMessageItem
+import com.josh.mailmeshchat.core.ui.EditGroupMemberDialog
 import com.josh.mailmeshchat.core.ui.OtherUserMessageItem
 import com.josh.mailmeshchat.core.util.ObserveAsEvents
 import org.koin.androidx.compose.koinViewModel
@@ -98,7 +100,9 @@ fun ChatContent(
                 text = state.subject,
                 textStyle = MaterialTheme.typography.bodyMedium,
                 startIcon = ArrowBackIcon,
-                onStartIconClick = { onAction(ChatAction.OnBackClick) }
+                onStartIconClick = { onAction(ChatAction.OnBackClick) },
+                icon = GroupIcon,
+                onIconClick = { onAction(ChatAction.OnGroupClick) }
             )
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(
@@ -142,6 +146,14 @@ fun ChatContent(
                 )
             }
         }
+    }
+
+    AnimatedVisibility(visible = state.isShowEditGroupDialog) {
+        EditGroupMemberDialog(
+            members = state.members,
+            onDismiss = { onAction(ChatAction.OnEditGroupMemberDialogDismiss) },
+            onSubmit = { onAction(ChatAction.OnEditGroupMemberSubmit(it)) }
+        )
     }
 }
 

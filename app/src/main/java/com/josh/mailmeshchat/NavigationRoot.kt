@@ -46,7 +46,7 @@ fun NavigationRoot(
                 rootNavController = navController
             )
         }
-        composable(route = "chat/{uuid}/{subject}/{userEmail}") {
+        composable(route = "chat/{uuid}/{subject}/{userEmail}/{members}") {
             ChatScreen(onBackClick = { navController.popBackStack() })
         }
     }
@@ -102,8 +102,8 @@ fun LandingNavGraph(
         NavHost(navController = navController, startDestination = "contact") {
             composable(route = "message") {
                 GroupScreen(
-                    onGroupItemClick = { uuid, subject, userEmail ->
-                        rootNavController.navigate("chat/$uuid/$subject/$userEmail")
+                    onGroupItemClick = { uuid, subject, userEmail, members ->
+                        rootNavController.navigate("chat/$uuid/$subject/$userEmail/$members")
                     },
                     sharedViewModel = sharedViewModel,
                     bottomBarPadding = padding

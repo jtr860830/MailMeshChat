@@ -32,6 +32,8 @@ interface MmcRepository {
 
     fun observeGroups(): Flow<Unit>
 
+    suspend fun updateGroupMembers(uuid: String, members: List<String>)
+
     suspend fun replyMessage(subject: String, replyMessage: String)
 
     suspend fun fetchMessagesBySubject(subject: String): Flow<List<Message>>
