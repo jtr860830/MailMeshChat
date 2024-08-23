@@ -1,13 +1,11 @@
 package com.josh.mailmeshchat
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.josh.mailmeshchat.core.data.MmcRepository
-import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.PREFIX_GROUP
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
@@ -66,6 +64,8 @@ class MainViewModel(
                         }?.let { contact ->
                             it.name = contact.name
                         }
+                    } else {
+                        it.name = "${it.name} (${it.members.size})"
                     }
                 }
                 state = state.copy(groups = groups.sortedBy { it.name }, isGroupsRefreshing = false)
