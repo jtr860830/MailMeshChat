@@ -26,8 +26,8 @@ import com.josh.mailmeshchat.core.designsystem.MailMeshChatTheme
 import com.josh.mailmeshchat.core.designsystem.components.GradientBackground
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatFloatActionButton
 import com.josh.mailmeshchat.core.designsystem.components.MailMeshChatToolBar
-import com.josh.mailmeshchat.core.ui.ChatGroupItem
 import com.josh.mailmeshchat.core.ui.CreateGroupDialog
+import com.josh.mailmeshchat.core.ui.GroupItem
 import com.josh.mailmeshchat.core.ui.PullToRefreshLazyColumn
 import com.josh.mailmeshchat.core.util.ObserveAsEvents
 import org.koin.androidx.compose.koinViewModel
@@ -87,8 +87,9 @@ fun GroupContent(
             PullToRefreshLazyColumn(
                 items = sharedState.groups,
                 content = { group ->
-                    ChatGroupItem(
+                    GroupItem(
                         groupName = group.name,
+                        unreadMessageCount = group.unreadMessageCount ?: 0,
                         onClick = {
                             onAction(
                                 GroupAction.OnGroupItemClick(

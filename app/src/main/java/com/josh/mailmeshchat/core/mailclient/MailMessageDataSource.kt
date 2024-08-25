@@ -10,6 +10,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
+import javax.mail.Flags
 import javax.mail.Folder
 import javax.mail.Message
 import javax.mail.Transport
@@ -22,9 +23,12 @@ import javax.mail.search.SubjectTerm
 fun JavaMailClient.fetchMessagesBySubject(subject: String): Flow<List<Message>> {
     return flow {
         val folder = getFolder(FOLDER_MESSAGES)
-        folder.open(Folder.READ_ONLY)
+        folder.open(Folder.READ_WRITE)
 
         val messages = folder.search(SubjectTerm(subject))
+        messages.forEach {
+            it.setFlag(Flags.Flag.SEEN, true)
+        }
         emit(messages.toList())
         folder.close(false)
     }
@@ -33,7 +37,7 @@ fun JavaMailClient.fetchMessagesBySubject(subject: String): Flow<List<Message>> 
 fun JavaMailClient.observeMessagesBySubject(subject: String): Flow<List<Message>> {
     return callbackFlow {
         val folder = store!!.getFolder(FOLDER_INBOX)
-        folder.open(Folder.READ_ONLY)
+        folder.open(Folder.READ_WRITE)
 
         folder.addMessageCountListener(object : MessageCountListener {
             override fun messagesAdded(e: MessageCountEvent?) {
@@ -41,6 +45,7 @@ fun JavaMailClient.observeMessagesBySubject(subject: String): Flow<List<Message>
                     for (message in it) {
                         val hasMMCId = message.getHeader(HEADER_ID)?.isNotEmpty() == true
                         if (hasMMCId && message.subject.removeAllPrefixes("Re: ") == subject) {
+                            message.setFlag(Flags.Flag.SEEN, true)
                             trySend(it)
                         }
                     }
@@ -88,5 +93,16 @@ fun JavaMailClient.replyMessage(
             }
             Transport.send(message)
         }
+    }
+}
+
+fun JavaMailClient.fetchUnreadMessageCount(subject: String): Flow<Int> {
+    return flow {
+        val folder = getFolder(FOLDER_MESSAGES)
+        folder.open(Folder.READ_ONLY)
+        val messages = folder.search(SubjectTerm(subject))
+        val unreadMessageCount = messages.count { !it.isSet(Flags.Flag.SEEN) }
+        emit(unreadMessageCount)
+        folder.close(false)
     }
 }

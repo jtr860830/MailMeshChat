@@ -8,7 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.josh.mailmeshchat.core.data.MmcRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -54,21 +58,27 @@ class MainViewModel(
     }
 
     fun fetchGroup() {
-        state = state.copy(isGroupsRefreshing = true)
-        viewModelScope.launch(Dispatchers.IO) {
-            mmcRepository.fetchGroup().collect { groups ->
-                groups.map {
-                    if (it.name.contains("@")) {
-                        state.contacts.find { contact ->
-                            contact.email == it.name
-                        }?.let { contact ->
-                            it.name = contact.name
+        viewModelScope.launch(Dispatchers.Default) {
+            state = state.copy(isGroupsRefreshing = true)
+            mmcRepository.fetchGroup().map { groups ->
+                groups.map { group ->
+                    async {
+                        val unreadCount = mmcRepository.fetchUnreadMessageCount(group.id).first()
+                        group.apply {
+                            unreadMessageCount = unreadCount
+                            name = when {
+                                name.contains("@") -> {
+                                    state.contacts.find { it.email == name }?.name ?: name
+                                }
+
+                                else -> "$name (${members.size})"
+                            }
                         }
-                    } else {
-                        it.name = "${it.name} (${it.members.size})"
+                        group
                     }
-                }
-                state = state.copy(groups = groups.sortedBy { it.name }, isGroupsRefreshing = false)
+                }.awaitAll()
+            }.map { it.sortedBy { group -> group.name } }.collect { sortedGroups ->
+                state = state.copy(groups = sortedGroups, isGroupsRefreshing = false)
             }
         }
     }

@@ -36,7 +36,10 @@ interface MmcRepository {
 
     suspend fun replyMessage(subject: String, replyMessage: String)
 
-    suspend fun fetchMessagesBySubject(subject: String): Flow<List<Message>>
+    fun fetchMessagesBySubject(subject: String): Flow<List<Message>>
 
-    suspend fun observeMessageBySubject(subject: String): Flow<List<Message>>
+    fun observeMessageBySubject(subject: String): Flow<List<Message>>
+
+    fun fetchUnreadMessageCount(subject: String): Flow<Int>
+
 }

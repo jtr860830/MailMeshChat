@@ -15,6 +15,7 @@ import com.josh.mailmeshchat.core.mailclient.deleteContact
 import com.josh.mailmeshchat.core.mailclient.fetchContact
 import com.josh.mailmeshchat.core.mailclient.fetchGroups
 import com.josh.mailmeshchat.core.mailclient.fetchMessagesBySubject
+import com.josh.mailmeshchat.core.mailclient.fetchUnreadMessageCount
 import com.josh.mailmeshchat.core.mailclient.observeFolder
 import com.josh.mailmeshchat.core.mailclient.observeMessagesBySubject
 import com.josh.mailmeshchat.core.mailclient.replyMessage
@@ -95,13 +96,17 @@ class DefaultMmcRepository(
         mailClient.replyMessage(subject, replyMessage)
     }
 
-    override suspend fun fetchMessagesBySubject(subject: String): Flow<List<Message>> {
+    override fun fetchMessagesBySubject(subject: String): Flow<List<Message>> {
         return mailClient.fetchMessagesBySubject(subject)
             .map { it.map { mimeMessage -> mimeMessage.toMessage() } }
     }
 
-    override suspend fun observeMessageBySubject(subject: String): Flow<List<Message>> {
+    override fun observeMessageBySubject(subject: String): Flow<List<Message>> {
         return mailClient.observeMessagesBySubject(subject)
             .map { it.map { mimeMessage -> mimeMessage.toMessage() } }
+    }
+
+    override fun fetchUnreadMessageCount(subject: String): Flow<Int> {
+        return mailClient.fetchUnreadMessageCount(subject)
     }
 }
