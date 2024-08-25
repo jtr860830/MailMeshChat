@@ -10,9 +10,11 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.navigation.navOptions
 import androidx.navigation.navigation
 import com.josh.mailmeshchat.core.designsystem.components.LandingDestination
@@ -46,7 +48,17 @@ fun NavigationRoot(
                 rootNavController = navController
             )
         }
-        composable(route = "chat/{uuid}/{subject}/{userEmail}/{members}") {
+        composable(route = "chat/{uuid}/{subject}/{userEmail}/{members}",
+            arguments = listOf(
+                navArgument("uuid") { type = NavType.StringType },
+                navArgument("subject") { type = NavType.StringType },
+                navArgument("userEmail") { type = NavType.StringType },
+                navArgument("members") {
+                    nullable = true
+                    defaultValue = null
+                    type = NavType.StringType
+                }
+            )) {
             ChatScreen(onBackClick = { navController.popBackStack() })
         }
     }
@@ -119,7 +131,7 @@ fun LandingNavGraph(
                         }
                     },
                     onSendMessageClick = { uuid, subject, userEmail ->
-                        rootNavController.navigate("chat/$uuid/$subject/$userEmail")
+                        rootNavController.navigate("chat/$uuid/$subject/$userEmail/${null}")
                     },
                     sharedViewModel = sharedViewModel,
                     bottomBarPadding = padding

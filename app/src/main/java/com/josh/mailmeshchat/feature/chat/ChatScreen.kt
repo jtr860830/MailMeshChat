@@ -44,6 +44,7 @@ import com.josh.mailmeshchat.core.ui.CurrentUserMessageItem
 import com.josh.mailmeshchat.core.ui.EditGroupMemberDialog
 import com.josh.mailmeshchat.core.ui.OtherUserMessageItem
 import com.josh.mailmeshchat.core.util.ObserveAsEvents
+import com.josh.mailmeshchat.core.util.isGroup
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -101,7 +102,7 @@ fun ChatContent(
                 textStyle = MaterialTheme.typography.bodyMedium,
                 startIcon = ArrowBackIcon,
                 onStartIconClick = { onAction(ChatAction.OnBackClick) },
-                icon = GroupIcon,
+                icon = if (state.subject.isGroup()) GroupIcon else null,
                 onIconClick = { onAction(ChatAction.OnGroupClick) }
             )
             Spacer(modifier = Modifier.height(16.dp))

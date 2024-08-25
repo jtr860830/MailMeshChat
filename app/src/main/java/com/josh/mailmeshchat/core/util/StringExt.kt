@@ -7,3 +7,13 @@ fun String.removeAllPrefixes(prefix: String): String {
     }
     return result
 }
+
+fun String.isGroup(): Boolean {
+    val regex = "\\(\\d+\\)".toRegex()
+    return regex.containsMatchIn(this)
+}
+
+fun String.replaceGroupNumber(newNumber: Int): String {
+    val regex = "\\(\\d+\\)".toRegex()
+    return regex.replace(this) { "($newNumber)" }
+}

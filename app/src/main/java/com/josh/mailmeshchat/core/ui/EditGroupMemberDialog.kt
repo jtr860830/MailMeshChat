@@ -118,6 +118,7 @@ fun EditGroupMemberDialog(
                 text = stringResource(id = R.string.submit),
                 isLoading = isLoading,
                 onClick = {
+                    isLoading = true
                     val emailString = emails.joinToString(",") { it.text.toString() }
                     if (emailString.isNotEmpty()) onSubmit(emailString)
                 })

@@ -15,6 +15,7 @@ import com.josh.mailmeshchat.core.data.model.Message
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.PREFIX_IMAGE
 import com.josh.mailmeshchat.core.util.bitmapToString
 import com.josh.mailmeshchat.core.util.moveToFirst
+import com.josh.mailmeshchat.core.util.replaceGroupNumber
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
@@ -110,6 +111,10 @@ class ChatViewModel(
             is ChatAction.OnEditGroupMemberSubmit -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     val members = action.members.split(",")
+                    state = state.copy(
+                        members = members,
+                        subject = subject.replaceGroupNumber(members.size)
+                    )
                     mmcRepository.updateGroupMembers(uuid, members)
                     hideEditGroupMemberDialog()
                 }
