@@ -5,4 +5,5 @@ data class Group(
     var name: String,
     var members: List<String>,
     var unreadMessageCount: Int? = null,
+    var isGroup: Boolean = false
 )

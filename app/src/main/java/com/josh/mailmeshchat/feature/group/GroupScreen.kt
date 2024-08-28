@@ -98,7 +98,8 @@ fun GroupContent(
                                     members = group.members.joinToString(","),
                                 )
                             )
-                        }
+                        },
+                        isGroup = group.isGroup
                     )
                 },
                 isRefreshing = sharedState.isGroupsRefreshing,

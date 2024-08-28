@@ -97,9 +97,11 @@ class DefaultMmcRepository(
                         val unreadCount = mailClient.fetchUnreadMessageCount(group.id).first()
                         group.apply {
                             unreadMessageCount = unreadCount
-                            name = when {
-                                name.contains("@") -> contacts.find { it.email == name }?.name ?: name
-                                else -> "$name (${members.size})"
+                            if (name.contains("@")) {
+                                name = contacts.find { it.email == name }?.name ?: name
+                            } else {
+                                name = "$name (${members.size})"
+                                isGroup = true
                             }
                         }
                     }
