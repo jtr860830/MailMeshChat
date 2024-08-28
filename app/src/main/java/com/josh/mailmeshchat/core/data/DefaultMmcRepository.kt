@@ -21,7 +21,10 @@ import com.josh.mailmeshchat.core.mailclient.observeMessagesBySubject
 import com.josh.mailmeshchat.core.mailclient.replyMessage
 import com.josh.mailmeshchat.core.mailclient.updateGroupMembers
 import com.josh.mailmeshchat.core.sharedpreference.UserInfoStorage
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class DefaultMmcRepository(
@@ -69,10 +72,10 @@ class DefaultMmcRepository(
         return mailClient.createGroup(to, name)
     }
 
-    override suspend fun fetchGroup(): Flow<List<Group>> {
+    private suspend fun fetchAndProcessGroups(): Flow<List<Group>> {
         val userEmail = userStorage.get()?.email ?: ""
-        return mailClient.fetchGroups(userEmail).map {
-            it.map { mimeMessage ->
+        return mailClient.fetchGroups(userEmail).map { groups ->
+            groups.map { mimeMessage ->
                 val group = mimeMessage.toGroup()
                 if (group.name.isEmpty()) {
                     group.name = group.members
@@ -80,6 +83,27 @@ class DefaultMmcRepository(
                         .joinToString()
                 }
                 group
+            }
+        }
+    }
+
+    override suspend fun fetchGroup(): Flow<List<Group>> = fetchAndProcessGroups()
+
+    override suspend fun fetchGroupAndUnreadMessageCount(contacts: List<Contact>): Flow<List<Group>> {
+        return fetchAndProcessGroups().map { groups ->
+            coroutineScope {
+                groups.map { group ->
+                    async {
+                        val unreadCount = mailClient.fetchUnreadMessageCount(group.id).first()
+                        group.apply {
+                            unreadMessageCount = unreadCount
+                            name = when {
+                                name.contains("@") -> contacts.find { it.email == name }?.name ?: name
+                                else -> "$name (${members.size})"
+                            }
+                        }
+                    }
+                }.map { it.await() }
             }
         }
     }

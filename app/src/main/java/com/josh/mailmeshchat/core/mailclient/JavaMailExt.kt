@@ -1,5 +1,6 @@
 package com.josh.mailmeshchat.core.mailclient
 
+import android.util.Log
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.FOLDER_GROUPS
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.FOLDER_INBOX
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.FOLDER_MESSAGES
@@ -7,8 +8,10 @@ import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.HEADER_GRO
 import com.josh.mailmeshchat.core.mailclient.JavaMailClient.Companion.HEADER_ID
 import com.sun.mail.imap.IMAPFolder
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.retryWhen
 import javax.mail.Folder
 import javax.mail.Message
 import javax.mail.event.MessageCountEvent
@@ -38,29 +41,50 @@ fun JavaMailClient.getFolder(folderName: String): Folder {
 
 fun JavaMailClient.observeFolder(folderName: String): Flow<Unit> {
     return callbackFlow {
-        val folder = getFolder(folderName)
-        folder.open(Folder.READ_ONLY)
-
-        folder.addMessageCountListener(object : MessageCountListener {
-            override fun messagesAdded(e: MessageCountEvent?) {
-                trySend(Unit)
-            }
-
-            override fun messagesRemoved(e: MessageCountEvent?) {
-                trySend(Unit)
-            }
-        })
-
+        var folder: Folder? = null
         var idle = true
-        while (idle) {
-            if (!folder.isOpen) break
-            (folder as IMAPFolder).idle()
+
+        try {
+            folder = getFolder(folderName)
+            folder.open(Folder.READ_ONLY)
+
+            folder.addMessageCountListener(object : MessageCountListener {
+                override fun messagesAdded(e: MessageCountEvent?) {
+                    trySend(Unit)
+                }
+
+                override fun messagesRemoved(e: MessageCountEvent?) {
+                    trySend(Unit)
+                }
+            })
+
+            while (idle) {
+                if (!folder.isOpen) {
+                    folder.open(Folder.READ_ONLY)
+                }
+                try {
+                    (folder as IMAPFolder).idle()
+                } catch (e: Exception) {
+                    Log.e("JavaMail", "IMAP IDLE interrupted: ${e.message}")
+                    delay(5000)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("JavaMail", "Error in observeFolder: ${e.message}")
+            throw e
+        } finally {
+            folder?.close(false)
+            idle = false
         }
 
         awaitClose {
-            folder.close(false)
+            folder?.close(false)
             idle = false
         }
+    }.retryWhen { cause, attempt ->
+        Log.e("JavaMail", "Retrying observeFolder. Attempt: $attempt, Cause: ${cause.message}")
+        delay(attempt * 1000)
+        true
     }
 }
 

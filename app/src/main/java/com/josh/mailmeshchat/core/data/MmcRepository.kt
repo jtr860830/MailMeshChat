@@ -30,6 +30,8 @@ interface MmcRepository {
 
     suspend fun fetchGroup(): Flow<List<Group>>
 
+    suspend fun fetchGroupAndUnreadMessageCount(contacts: List<Contact>): Flow<List<Group>>
+
     fun observeGroups(): Flow<Unit>
 
     suspend fun updateGroupMembers(uuid: String, members: List<String>)

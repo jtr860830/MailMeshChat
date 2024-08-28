@@ -55,36 +55,40 @@ fun JavaMailClient.createGroup(to: Array<String>, name: String? = ""): Flow<Stri
 
 fun JavaMailClient.fetchGroups(userEmail: String): Flow<List<Message>> {
     return flow {
-        val folder = getFolder(FOLDER_GROUPS)
-        folder.open(Folder.READ_ONLY)
+        try {
+            val folder = getFolder(FOLDER_GROUPS)
+            folder.open(Folder.READ_ONLY)
 
-        val uniqueMessages = mutableMapOf<String, Message>()
+            val uniqueMessages = mutableMapOf<String, Message>()
 
-        // get the latest group detail
-        for (message in folder.messages) {
-            val subject = message.subject
-            val timestamp = message.getHeader(HEADER_TIMESTAMP)?.firstOrNull()?.toLongOrNull()
+            // get the latest group detail
+            for (message in folder.messages) {
+                val subject = message.subject
+                val timestamp = message.getHeader(HEADER_TIMESTAMP)?.firstOrNull()?.toLongOrNull()
 
-            if (subject != null && timestamp != null) {
-                val existingMessage = uniqueMessages[subject]
-                if (existingMessage == null || (existingMessage.getHeader(HEADER_TIMESTAMP)
-                        ?.firstOrNull()?.toLongOrNull() ?: 0) < timestamp
-                ) {
-                    uniqueMessages[subject] = message
+                if (subject != null && timestamp != null) {
+                    val existingMessage = uniqueMessages[subject]
+                    if (existingMessage == null || (existingMessage.getHeader(HEADER_TIMESTAMP)
+                            ?.firstOrNull()?.toLongOrNull() ?: 0) < timestamp
+                    ) {
+                        uniqueMessages[subject] = message
+                    }
                 }
             }
-        }
 
-        // filter out groups that the user is not a member of
-        for ((key, message) in uniqueMessages) {
-            val group = message.toGroup()
-            if (!group.members.contains(userEmail)) {
-                uniqueMessages.remove(key)
+            // filter out groups that the user is not a member of
+            for ((key, message) in uniqueMessages) {
+                val group = message.toGroup()
+                if (!group.members.contains(userEmail)) {
+                    uniqueMessages.remove(key)
+                }
             }
-        }
 
-        emit(uniqueMessages.values.toList())
-        folder.close(false)
+            emit(uniqueMessages.values.toList())
+            folder.close(false)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
 

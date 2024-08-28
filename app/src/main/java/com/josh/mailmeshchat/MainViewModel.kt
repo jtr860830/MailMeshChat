@@ -8,10 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.josh.mailmeshchat.core.data.MmcRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -58,26 +55,10 @@ class MainViewModel(
     }
 
     fun fetchGroup() {
-        viewModelScope.launch(Dispatchers.Default) {
+        viewModelScope.launch(Dispatchers.IO) {
             state = state.copy(isGroupsRefreshing = true)
-            mmcRepository.fetchGroup().map { groups ->
-                groups.map { group ->
-                    async {
-                        val unreadCount = mmcRepository.fetchUnreadMessageCount(group.id).first()
-                        group.apply {
-                            unreadMessageCount = unreadCount
-                            name = when {
-                                name.contains("@") -> {
-                                    state.contacts.find { it.email == name }?.name ?: name
-                                }
-
-                                else -> "$name (${members.size})"
-                            }
-                        }
-                        group
-                    }
-                }.awaitAll()
-            }.map { it.sortedBy { group -> group.name } }.collect { sortedGroups ->
+            mmcRepository.fetchGroupAndUnreadMessageCount(state.contacts)
+                .map { it.sortedBy { group -> group.name } }.collect { sortedGroups ->
                 state = state.copy(groups = sortedGroups, isGroupsRefreshing = false)
             }
         }
