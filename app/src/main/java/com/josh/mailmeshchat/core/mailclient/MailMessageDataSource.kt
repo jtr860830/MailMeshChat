@@ -65,7 +65,9 @@ fun JavaMailClient.observeMessagesBySubject(subject: String): Flow<List<Message>
 
         awaitClose {
             idle = false
-            folder.close(false)
+            if (folder.isOpen) {
+                folder.close(false)
+            }
         }
     }
 }
